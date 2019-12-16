@@ -48,4 +48,17 @@ public class AppendStack<T> implements PStack<T> {
 			return l;
 		return new AppendStack<>(l, r);
 	}
+
+	public static <T> PStack<T> append(T l, PStack<T> r) {
+		if (l == null)
+			return r;
+
+		PStack<T> t = PersistStack.create();
+		t.push(l);
+		if (r.isEmpty()) {
+
+			return t;
+		}
+		return new AppendStack<>(t, r);
+	}
 }
