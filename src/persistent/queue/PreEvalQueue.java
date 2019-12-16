@@ -1,11 +1,16 @@
-package persistent;
+package persistent.queue;
 
-import persistent.Persistent.AppendStack;
-import persistent.Persistent.PStack;
-import persistent.Persistent.PersistStack;
+import persistent.PStack;
+import persistent.stack.AppendStack;
+import persistent.stack.PersistStack;
 
 /**
- * Paper: "Simple and efficient purely functional queues and deques", Chris Okasaki
+ * <blockquote> Paper: "Simple and efficient purely functional queues and deques", Chris Okasaki
+ * </blockquote>
+ *
+ * <p>
+ * Invariants: {@literal |R| <= |L| and |^L| = |L| - |R|}
+ * </p>
  * 
  * @author morrisy
  *
@@ -29,7 +34,10 @@ public class PreEvalQueue<T> {
 		private final PStack<T> r;
 		private final PStack<T> a;
 		private final long size;
+
+		/** cache top element */
 		private T top;
+		/** cache immutable pop result */
 		private PStack<T> pop;
 
 		Rot(PStack<T> l, PStack<T> r) {
