@@ -6,8 +6,7 @@ import persistent.stack.AppendStack;
 import persistent.stack.PersistStack;
 
 /**
- * <blockquote> Paper: "Simple and efficient purely functional queues and deques", Chris Okasaki
- * </blockquote>
+ * Paper: "Simple and efficient purely functional queues and deques", Chris Okasaki
  *
  * <p>
  * Invariants: {@literal |R| <= |L| and |^L| = |L| - |R|}
