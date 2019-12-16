@@ -10,13 +10,13 @@ public class Drop<T> implements PStack<T> {
 	
 	private PStack<T> rx;
 	private PStack<T> pop;
+	private T top;
 	private final int size;
 
 	private Drop(int n, PStack<T> x) {
 		this.n = n;
 		this.x = x;
 		this.size = x.size() - n;
-		assert n > 0 && n < x.size();
 	}
 
 	@Override
@@ -31,7 +31,10 @@ public class Drop<T> implements PStack<T> {
 
 	@Override
 	public T top() {
+		if (top != null)
+			return top;
 		T v = getReal().top();
+		top = v;
 		assert v != null : String.format("%d %s %b", getReal().size(), getReal().getClass(), isEmpty());
 		return v;
 	}
@@ -51,7 +54,10 @@ public class Drop<T> implements PStack<T> {
 	private PStack<T> getReal() {
 		if (rx != null)
 			return rx;
-		assert size() < 1000;
+		if (x instanceof Drop) {
+			Drop<T> t = ((Drop<T>) x);
+			return new Drop<>(n + t.n, t.x);
+		}
 		rx = x;
 		for (int i = 1; i <= n; i++) {
 			PStack<T> res = rx.pop();
@@ -66,6 +72,10 @@ public class Drop<T> implements PStack<T> {
 			return x;
 		if (n >= x.size())
 			return PersistStack.create();
+		if (x instanceof Drop<?>) {
+			Drop<T> t = ((Drop<T>) x);
+			return new Drop<>(n + t.n, t.x);
+		}
 		return new Drop<>(n, x);
 	}
 }

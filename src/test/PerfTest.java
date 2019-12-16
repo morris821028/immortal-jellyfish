@@ -135,15 +135,16 @@ class PerfTest {
 		assert stk4.back() == 3;
 
 		stk = PreEvalDeque.create();
-		for (int i = 0; i < 1000000; i++) {
+		final int n = 10000;
+		for (int i = 0; i < n; i++) {
 			stk = stk.pushBack(i);
 		}
-		for (int i = 0; i < 1000000; i++) {
+		for (int i = 0; i < n; i++) {
 			PDeque<Integer> t = stk.pushBack(1);
 			Integer v = t.back();
 			Assertions.assertEquals(v, 1);
 		}
-		for (int i = 1000000 - 1; i >= 0; i--) {
+		for (int i = n - 1; i >= 0; i--) {
 			Integer v = stk.back();
 			Assertions.assertEquals(v, i);
 			stk = stk.popBack();
@@ -200,7 +201,7 @@ class PerfTest {
 //		test(() -> testStack());
 //		test(() -> testQueue());
 //		test(() -> testQueue2());
-//		test(() -> testDequeAsStackBack());
+		test(() -> testDequeAsStackBack());
 		test(() -> testDequeAsStackFront());
 		// try {
 		// assert false;

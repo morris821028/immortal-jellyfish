@@ -7,6 +7,8 @@ public class Rev<T> implements PStack<T> {
 	private final PStack<T> x;
 	private PStack<T> y;
 
+	private PStack<T> pop;
+
 	private Rev(PStack<T> x) {
 		this.x = x;
 	}
@@ -33,7 +35,9 @@ public class Rev<T> implements PStack<T> {
 
 	@Override
 	public PStack<T> pop() {
-		return getReal().pop();
+		if (pop != null)
+			return pop;
+		return pop = getReal().pop();
 	}
 	
 	private PStack<T> getReal() {
