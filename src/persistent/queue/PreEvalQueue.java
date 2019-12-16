@@ -1,5 +1,6 @@
 package persistent.queue;
 
+import persistent.PQueue;
 import persistent.PStack;
 import persistent.stack.AppendStack;
 import persistent.stack.PersistStack;
@@ -16,7 +17,7 @@ import persistent.stack.PersistStack;
  *
  * @param <T> The type of element
  */
-public class PreEvalQueue<T> {
+public class PreEvalQueue<T> implements PQueue<T> {
 	@SuppressWarnings("rawtypes")
 	private static final PreEvalQueue<?> EMPTY = new PreEvalQueue();
 
@@ -33,7 +34,7 @@ public class PreEvalQueue<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;
-		private final long size;
+		private final int size;
 
 		/** cache top element */
 		private T top;
@@ -58,7 +59,7 @@ public class PreEvalQueue<T> {
 		}
 
 		@Override
-		public long size() {
+		public int size() {
 			return size;
 		}
 
@@ -122,7 +123,7 @@ public class PreEvalQueue<T> {
 		return l.isEmpty();
 	}
 
-	public long size() {
+	public int size() {
 		return l.size() + r.size();
 	}
 

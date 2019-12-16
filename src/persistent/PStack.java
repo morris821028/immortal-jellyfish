@@ -3,7 +3,7 @@ package persistent;
 public interface PStack<T> {
 	public boolean isEmpty();
 
-	public long size();
+	public int size();
 
 	public T top();
 

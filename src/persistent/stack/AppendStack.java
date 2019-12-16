@@ -5,7 +5,7 @@ import persistent.PStack;
 public class AppendStack<T> implements PStack<T> {
 	private final PStack<T> l;
 	private final PStack<T> r;
-	private final long size;
+	private final int size;
 	
 	private AppendStack(PStack<T> l, PStack<T> r) {
 		assert !l.isEmpty();
@@ -20,7 +20,7 @@ public class AppendStack<T> implements PStack<T> {
 	}
 
 	@Override
-	public long size() {
+	public int size() {
 		return size;
 	}
 

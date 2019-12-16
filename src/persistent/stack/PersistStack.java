@@ -18,13 +18,13 @@ public class PersistStack<T> implements PStack<T> {
 
 	private final T value;
 	private final PersistStack<T> next;
-	private final long size;
+	private final int size;
 
 	private PersistStack() {
 		this(null, null, 0);
 	}
 
-	private PersistStack(T value, PersistStack<T> next, long size) {
+	private PersistStack(T value, PersistStack<T> next, int size) {
 		this.value = value;
 		this.next = next;
 		this.size = size;
@@ -34,7 +34,7 @@ public class PersistStack<T> implements PStack<T> {
 		return size == 0;
 	}
 
-	public long size() {
+	public int size() {
 		return size;
 	}
 
