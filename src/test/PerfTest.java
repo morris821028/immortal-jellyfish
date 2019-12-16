@@ -3,8 +3,13 @@ package test;
 import static org.junit.jupiter.api.Assertions.*;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Scanner;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import persistent.PDeque;
+import persistent.deque.PreEvalDeque;
 import persistent.queue.PreEvalQueue;
 import persistent.queue.RealtimeQueue;
 import persistent.stack.PersistStack;
@@ -117,6 +122,68 @@ class PerfTest {
 		System.out.println("testQueue2() pass");
 	}
 
+	private static void testDequeAsStackBack() {
+		PDeque<Integer> stk = PreEvalDeque.create();
+		PDeque<Integer> stk1 = stk.pushBack(1);
+		PDeque<Integer> stk2 = stk1.pushBack(2);
+		PDeque<Integer> stk3 = stk2.popBack();
+		PDeque<Integer> stk4 = stk3.pushBack(3);
+
+		assert stk1.back() == 1;
+		assert stk2.back() == 2;
+		assert stk3.back() == 1;
+		assert stk4.back() == 3;
+
+		stk = PreEvalDeque.create();
+		for (int i = 0; i < 1000000; i++) {
+			stk = stk.pushBack(i);
+		}
+		for (int i = 0; i < 1000000; i++) {
+			PDeque<Integer> t = stk.pushBack(1);
+			Integer v = t.back();
+			Assertions.assertEquals(v, 1);
+		}
+		for (int i = 1000000 - 1; i >= 0; i--) {
+			Integer v = stk.back();
+			Assertions.assertEquals(v, i);
+			stk = stk.popBack();
+		}
+		Assertions.assertEquals(stk.isEmpty(), true);
+		System.out.println("testDequeAsStackBack() pass");
+	}
+	
+	private static void testDequeAsStackFront() {
+		PDeque<Integer> stk = PreEvalDeque.create();
+		PDeque<Integer> stk1 = stk.pushFront(1);
+		PDeque<Integer> stk2 = stk1.pushFront(2);
+		PDeque<Integer> stk3 = stk2.popFront();
+		PDeque<Integer> stk4 = stk3.pushFront(3);
+
+		assert stk1.front() == 1;
+		assert stk2.front() == 2;
+		assert stk3.front() == 1;
+		assert stk4.front() == 3;
+
+		stk = PreEvalDeque.create();
+		final int n = 100000;
+		for (int i = 0; i < n; i++) {
+			stk = stk.pushFront(i);
+		}
+		for (int i = 0; i < n; i++) {
+			PDeque<Integer> t = stk.pushFront(1);
+			Integer v = t.front();
+			Assertions.assertEquals(1, v);
+		}
+		Assertions.assertEquals(stk.size(), n);
+		for (int i = n - 1; i >= 0; i--) {
+			Integer v = stk.front();
+			Assertions.assertEquals(i, v);
+			stk = stk.popFront();
+		}
+		Assertions.assertEquals(stk.isEmpty(), true);
+		System.out.println("testDequeAsStackFront() pass");
+	}
+
 	private static void test(Runnable r) {
 		System.gc();
 		long start = System.nanoTime();
@@ -127,13 +194,14 @@ class PerfTest {
 
 	@Test
 	void test() {
-		// Scanner cin = new Scanner(System.in);
-		// cin.next();
-		test(() -> testGoldenStack());
-		test(() -> testStack());
-		test(() -> testQueue());
-		test(() -> testQueue2());
-		// test(() -> testDqueue());
+		Scanner cin = new Scanner(System.in);
+		cin.next();
+//		test(() -> testGoldenStack());
+//		test(() -> testStack());
+//		test(() -> testQueue());
+//		test(() -> testQueue2());
+//		test(() -> testDequeAsStackBack());
+		test(() -> testDequeAsStackFront());
 		// try {
 		// assert false;
 		// System.out.println("test fail, please set up -ea");

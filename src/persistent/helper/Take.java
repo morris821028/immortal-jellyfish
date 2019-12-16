@@ -8,9 +8,12 @@ public class Take<T> implements PStack<T> {
 	private final PStack<T> x;
 	private final int n;
 
+	private PStack<T> pop;
+
 	private Take(int n, PStack<T> x) {
 		this.n = n;
 		this.x = x;
+//		assert n < 1024;
 	}
 
 	@Override
@@ -30,12 +33,15 @@ public class Take<T> implements PStack<T> {
 
 	@Override
 	public PStack<T> push(T value) {
-		return AppendStack.append(value, this);
+		return AppendStack.create(value, this);
 	}
 
 	@Override
 	public PStack<T> pop() {
-		return create(n - 1, x.pop());
+		if (n == 1)
+			return PersistStack.create();
+		pop = create(n - 1, x.pop());
+		return pop;
 	}
 
 	public static <T> PStack<T> create(int n, PStack<T> x) {

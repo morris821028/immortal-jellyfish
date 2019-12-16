@@ -26,7 +26,9 @@ public class AppendStack<T> implements PStack<T> {
 
 	@Override
 	public T top() {
-		return l.top();
+		T v = l.top();
+		assert v != null : String.format("%d %s %b", l.size(), l.getClass(), isEmpty());
+		return v;
 	}
 
 	@Override
@@ -38,10 +40,10 @@ public class AppendStack<T> implements PStack<T> {
 	public PStack<T> pop() {
 		if (l.size() == 1)
 			return r;
-		return new AppendStack<>(l.pop(), r);
+		return create(l.pop(), r);
 	}
 
-	public static <T> PStack<T> append(PStack<T> l, PStack<T> r) {
+	public static <T> PStack<T> create(PStack<T> l, PStack<T> r) {
 		if (l.isEmpty())
 			return r;
 		if (r.isEmpty())
@@ -49,14 +51,13 @@ public class AppendStack<T> implements PStack<T> {
 		return new AppendStack<>(l, r);
 	}
 
-	public static <T> PStack<T> append(T l, PStack<T> r) {
+	public static <T> PStack<T> create(T l, PStack<T> r) {
 		if (l == null)
 			return r;
 
 		PStack<T> t = PersistStack.create();
-		t.push(l);
+		t = t.push(l);
 		if (r.isEmpty()) {
-
 			return t;
 		}
 		return new AppendStack<>(t, r);

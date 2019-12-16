@@ -1,41 +1,59 @@
 package persistent.helper;
 
 import persistent.PStack;
+import persistent.stack.PersistStack;
 
 public class Rev<T> implements PStack<T> {
+	private final PStack<T> x;
+	private PStack<T> y;
+
+	private Rev(PStack<T> x) {
+		this.x = x;
+	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		return x.isEmpty();
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return x.size();
 	}
 
 	@Override
 	public T top() {
-		// TODO Auto-generated method stub
-		return null;
+		return getReal().top();
 	}
 
 	@Override
 	public PStack<T> push(T value) {
-		// TODO Auto-generated method stub
-		return null;
+		return Append.create(value, this);
 	}
 
 	@Override
 	public PStack<T> pop() {
-		// TODO Auto-generated method stub
-		return null;
+		return getReal().pop();
+	}
+	
+	private PStack<T> getReal() {
+		if (y != null)
+			return y;
+		y = PersistStack.create();
+		PStack<T> tmp = x;
+		while (!tmp.isEmpty()) {
+			y = y.push(tmp.top());
+			tmp = tmp.pop();
+		}
+		assert y.size() == x.size() : String.format("%d %d %s", y.size(), x.size(), x.getClass());
+		return y;
 	}
 
 	public static <T> PStack<T> create(PStack<T> r) {
-		// TODO Auto-generated method stub
-		return null;
+		if (r.isEmpty())
+			return PersistStack.create();
+		if (r.size() == 1)
+			return r;
+		return new Rev<>(r);
 	}
 }

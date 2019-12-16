@@ -82,7 +82,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 		public PStack<T> push(T value) {
 			PStack<T> t = PersistStack.create();
 			t = t.push(value);
-			return AppendStack.append(t, this);
+			return AppendStack.create(t, this);
 		}
 
 		@Override
@@ -95,7 +95,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 			}
 			PStack<T> t = PersistStack.create();
 			t = t.push(r.top());
-			pop = new Rot(l.pop(), r.pop(), AppendStack.append(t, a));
+			pop = new Rot(l.pop(), r.pop(), AppendStack.create(t, a));
 			return pop;
 		}
 	}
