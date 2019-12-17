@@ -3,7 +3,7 @@ package persistent.queue;
 import persistent.PQueue;
 import persistent.PStack;
 import persistent.helper.Append;
-import persistent.stack.PersistStack;
+import persistent.util.PCollections;
 
 /**
  * Paper: "Simple and efficient purely functional queues and deques", Chris Okasaki
@@ -41,7 +41,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 		private PStack<T> pop;
 
 		Rot(PStack<T> l, PStack<T> r) {
-			this(l, r, PersistStack.create());
+			this(l, r, PCollections.emptyStack());
 		}
 
 		Rot(PStack<T> l, PStack<T> r, PStack<T> a) {
@@ -80,7 +80,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 
 		@Override
 		public PStack<T> push(T value) {
-			PStack<T> t = PersistStack.create();
+			PStack<T> t = PCollections.emptyStack();
 			t = t.push(value);
 			return Append.create(t, this);
 		}
@@ -93,7 +93,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 				pop = a;
 				return a;
 			}
-			PStack<T> t = PersistStack.create();
+			PStack<T> t = PCollections.emptyStack();
 			t = t.push(r.top());
 			pop = new Rot(l.pop(), r.pop(), Append.create(t, a));
 			return pop;
@@ -101,7 +101,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 	}
 
 	private PreEvalQueue() {
-		this.l = PersistStack.create();
+		this.l = PCollections.emptyStack();
 		this.r = l;
 		this.b = l;
 	}
@@ -112,7 +112,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 			this.r = r;
 			this.b = b.pop();
 		} else {
-			this.r = PersistStack.create();
+			this.r = PCollections.emptyStack();
 			this.l = new Rot(l, r);
 			this.b = this.l;
 		}

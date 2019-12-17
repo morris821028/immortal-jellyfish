@@ -1,10 +1,12 @@
 package persistent.queue;
 
 import persistent.PQueue;
-import persistent.stack.PersistStack;
+import persistent.PStack;
+import persistent.util.PCollections;
 
 /**
- * Paper: "Real Time Queue Operations in Pure LISP", Hood, Robert T. & Melville, Robert C.
+ * Paper: "Real Time Queue Operations in Pure LISP", Hood, Robert T. & Melville,
+ * Robert C.
  * 
  * @author morrisy
  *
@@ -19,22 +21,21 @@ public class RealtimeQueue<T> implements PQueue<T> {
 		return (RealtimeQueue<T>) EMPTY;
 	}
 
-	private final PersistStack<T> head;
-	private final PersistStack<T> tail;
+	private final PStack<T> head;
+	private final PStack<T> tail;
 
-	private final PersistStack<T> tailReverseFrom;
-	private final PersistStack<T> tailReverseTo;
-	private final PersistStack<T> headReverseFrom;
-	private final PersistStack<T> headReverseTo;
+	private final PStack<T> tailReverseFrom;
+	private final PStack<T> tailReverseTo;
+	private final PStack<T> headReverseFrom;
+	private final PStack<T> headReverseTo;
 	private final int headCopied;
 
 	private RealtimeQueue() {
-		this(PersistStack.create(), PersistStack.create(), null, null, null, null, 0);
+		this(PCollections.emptyStack(), PCollections.emptyStack(), null, null, null, null, 0);
 	}
 
-	private RealtimeQueue(PersistStack<T> head, PersistStack<T> tail, PersistStack<T> tailReverseFrom,
-			PersistStack<T> tailReverseTo, PersistStack<T> headReverseFrom, PersistStack<T> headReverseTo,
-			int headCopied) {
+	private RealtimeQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom, PStack<T> tailReverseTo,
+			PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		this.headCopied = headCopied;
 		if (tail.size() <= head.size()) {
 			this.head = head;
@@ -49,19 +50,19 @@ public class RealtimeQueue<T> implements PQueue<T> {
 					&& headReverseTo == null : "Internal error: invariant failure.";
 			if (tail.size() == 1) {
 				this.head = tail;
-				this.tail = PersistStack.create();
+				this.tail = PCollections.emptyStack();
 				this.tailReverseFrom = null;
 				this.tailReverseTo = null;
 				this.headReverseFrom = null;
 				this.headReverseTo = null;
 			} else {
 				this.head = head;
-				this.tail = PersistStack.create();
+				this.tail = PCollections.emptyStack();
 
 				this.tailReverseFrom = tail;
-				this.tailReverseTo = PersistStack.create();
+				this.tailReverseTo = PCollections.emptyStack();
 				this.headReverseFrom = head;
-				this.headReverseTo = PersistStack.create();
+				this.headReverseTo = PCollections.emptyStack();
 			}
 		}
 	}
@@ -87,8 +88,8 @@ public class RealtimeQueue<T> implements PQueue<T> {
 	}
 
 	public RealtimeQueue<T> push(T value) {
-		return newPersistQueue(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom,
-				headReverseTo, headCopied);
+		return newPersistQueue(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+				headCopied);
 	}
 
 	public RealtimeQueue<T> pop() {
@@ -100,9 +101,8 @@ public class RealtimeQueue<T> implements PQueue<T> {
 		return tailReverseFrom != null && tailReverseTo != null && headReverseFrom != null && headReverseTo != null;
 	}
 
-	private static <T> RealtimeQueue<T> step(PersistStack<T> head, PersistStack<T> tail,
-			PersistStack<T> tailReverseFrom, PersistStack<T> tailReverseTo, PersistStack<T> headReverseFrom,
-			PersistStack<T> headReverseTo, int headCopied) {
+	private static <T> RealtimeQueue<T> step(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
+			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		assert (tailReverseFrom != null && tailReverseTo != null && headReverseFrom != null
 				&& headReverseTo != null) : "Internal error: invariant failure.";
 
@@ -144,9 +144,8 @@ public class RealtimeQueue<T> implements PQueue<T> {
 				headCopied);
 	}
 
-	private static <T> RealtimeQueue<T> newPersistQueue(PersistStack<T> head, PersistStack<T> tail,
-			PersistStack<T> tailReverseFrom, PersistStack<T> tailReverseTo, PersistStack<T> headReverseFrom,
-			PersistStack<T> headReverseTo, int headCopied) {
+	private static <T> RealtimeQueue<T> newPersistQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
+			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
 				headReverseTo, headCopied);
 		if (ret.needsStep())

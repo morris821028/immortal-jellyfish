@@ -6,7 +6,7 @@ import persistent.helper.Append;
 import persistent.helper.Drop;
 import persistent.helper.Rev;
 import persistent.helper.Take;
-import persistent.stack.PersistStack;
+import persistent.util.PCollections;
 
 /**
  * Paper: "Simple and efficient purely functional queues and deques", Chris
@@ -98,7 +98,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 			if (rx != null)
 				return rx;
 			assert n < C;
-			rx = new Rot2(l, Drop.create(n, r), PersistStack.create());
+			rx = new Rot2(l, Drop.create(n, r), PCollections.emptyStack());
 			return rx;
 		}
 	}
@@ -165,7 +165,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 	}
 
 	private PreEvalDeque() {
-		l = PersistStack.create();
+		l = PCollections.emptyStack();
 		r = l;
 		lHat = l;
 		rHat = l;
