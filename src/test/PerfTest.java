@@ -26,7 +26,7 @@ class PerfTest {
 			Assertions.assertEquals(v, i);
 			stk.pop();
 		}
-		System.out.println("testStack() pass");
+		System.out.println("testGoldenStack() pass");
 	}
 	
 	private static void testStack() {
@@ -135,7 +135,7 @@ class PerfTest {
 		assert stk4.back() == 3;
 
 		stk = PreEvalDeque.create();
-		final int n = 10000;
+		final int n = 1000000;
 		for (int i = 0; i < n; i++) {
 			stk = stk.pushBack(i);
 		}
@@ -166,7 +166,7 @@ class PerfTest {
 		assert stk4.front() == 3;
 
 		stk = PreEvalDeque.create();
-		final int n = 100000;
+		final int n = 1000000;
 		for (int i = 0; i < n; i++) {
 			stk = stk.pushFront(i);
 		}
@@ -195,12 +195,10 @@ class PerfTest {
 
 	@Test
 	void test() {
-		Scanner cin = new Scanner(System.in);
-		cin.next();
-//		test(() -> testGoldenStack());
-//		test(() -> testStack());
-//		test(() -> testQueue());
-//		test(() -> testQueue2());
+		test(() -> testGoldenStack());
+		test(() -> testStack());
+		test(() -> testQueue());
+		test(() -> testQueue2());
 		test(() -> testDequeAsStackBack());
 		test(() -> testDequeAsStackFront());
 		// try {

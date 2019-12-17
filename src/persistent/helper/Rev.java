@@ -37,7 +37,8 @@ public class Rev<T> implements PStack<T> {
 	public PStack<T> pop() {
 		if (pop != null)
 			return pop;
-		return pop = getReal().pop();
+		pop = getReal().pop();
+		return pop;
 	}
 	
 	private PStack<T> getReal() {
@@ -58,6 +59,10 @@ public class Rev<T> implements PStack<T> {
 			return PersistStack.create();
 		if (r.size() == 1)
 			return r;
+		if (r instanceof Rev<?>) {
+			Rev<T> t = (Rev<T>) r;
+			return t.x;
+		}
 		return new Rev<>(r);
 	}
 }

@@ -1,7 +1,6 @@
 package persistent.helper;
 
 import persistent.PStack;
-import persistent.stack.AppendStack;
 import persistent.stack.PersistStack;
 
 public class Drop<T> implements PStack<T> {
@@ -17,6 +16,8 @@ public class Drop<T> implements PStack<T> {
 		this.n = n;
 		this.x = x;
 		this.size = x.size() - n;
+		this.getReal();
+		this.top();
 	}
 
 	@Override
@@ -41,7 +42,7 @@ public class Drop<T> implements PStack<T> {
 
 	@Override
 	public PStack<T> push(T value) {
-		return AppendStack.create(value, this);
+		return Append.create(value, this);
 	}
 
 	@Override
@@ -51,13 +52,9 @@ public class Drop<T> implements PStack<T> {
 		return pop;
 	}
 
-	private PStack<T> getReal() {
+	PStack<T> getReal() {
 		if (rx != null)
 			return rx;
-		if (x instanceof Drop) {
-			Drop<T> t = ((Drop<T>) x);
-			return new Drop<>(n + t.n, t.x);
-		}
 		rx = x;
 		for (int i = 1; i <= n; i++) {
 			PStack<T> res = rx.pop();
@@ -72,10 +69,6 @@ public class Drop<T> implements PStack<T> {
 			return x;
 		if (n >= x.size())
 			return PersistStack.create();
-		if (x instanceof Drop<?>) {
-			Drop<T> t = ((Drop<T>) x);
-			return new Drop<>(n + t.n, t.x);
-		}
 		return new Drop<>(n, x);
 	}
 }

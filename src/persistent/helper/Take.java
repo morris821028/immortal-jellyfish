@@ -1,7 +1,6 @@
 package persistent.helper;
 
 import persistent.PStack;
-import persistent.stack.AppendStack;
 import persistent.stack.PersistStack;
 
 public class Take<T> implements PStack<T> {
@@ -13,7 +12,6 @@ public class Take<T> implements PStack<T> {
 	private Take(int n, PStack<T> x) {
 		this.n = n;
 		this.x = x;
-//		assert n < 1024;
 	}
 
 	@Override
@@ -33,13 +31,15 @@ public class Take<T> implements PStack<T> {
 
 	@Override
 	public PStack<T> push(T value) {
-		return AppendStack.create(value, this);
+		return Append.create(value, this);
 	}
 
 	@Override
 	public PStack<T> pop() {
+		if (pop != null)
+			return pop;
 		if (n == 1)
-			return PersistStack.create();
+			return pop = PersistStack.create();
 		pop = create(n - 1, x.pop());
 		return pop;
 	}
@@ -47,6 +47,10 @@ public class Take<T> implements PStack<T> {
 	public static <T> PStack<T> create(int n, PStack<T> x) {
 		if (n == 0)
 			return PersistStack.create();
+		if (x instanceof Drop<?>) {
+			Drop<T> t = (Drop<T>) x;
+			x = t.getReal();
+		}
 		return new Take<>(n, x);
 	}
 }

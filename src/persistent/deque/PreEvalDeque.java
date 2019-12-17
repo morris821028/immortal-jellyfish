@@ -6,7 +6,6 @@ import persistent.helper.Append;
 import persistent.helper.Drop;
 import persistent.helper.Rev;
 import persistent.helper.Take;
-import persistent.stack.AppendStack;
 import persistent.stack.PersistStack;
 
 /**
@@ -45,6 +44,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 		private final int n;
 		private final PStack<T> l;
 		private final PStack<T> r;
+		private final int size;
 
 		private PStack<T> rx;
 		private PStack<T> pop;
@@ -53,6 +53,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 			this.n = n;
 			this.l = l;
 			this.r = r;
+			this.size = l.size() + r.size() - n;
 			assert this.n >= 0 && this.n < r.size();
 		}
 
@@ -63,7 +64,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 		@Override
 		public int size() {
-			return l.size() + r.size() - n;
+			return size;
 		}
 
 		@Override
@@ -75,7 +76,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 		@Override
 		public PStack<T> push(T value) {
-			return AppendStack.create(value, this);
+			return Append.create(value, this);
 		}
 
 		@Override
@@ -137,7 +138,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 		@Override
 		public PStack<T> push(T value) {
-			return AppendStack.create(value, this);
+			return Append.create(value, this);
 		}
 
 		@Override
@@ -145,7 +146,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 			if (pop != null)
 				return pop;
 			if (!l.isEmpty() && r.size() >= C) {
-				pop = new Rot2(l.pop(), Drop.create(C, r), AppendStack.create(Rev.create(Take.create(C, r)), a));
+				pop = new Rot2(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.create(C, r)), a));
 				return pop;
 			}
 			pop = getReal().pop();
@@ -157,7 +158,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 			if (rx != null)
 				return rx;
 			assert l.size() == 0 || r.size() < C;
-			rx = AppendStack.create(AppendStack.create(l, Rev.create(r)), a);
+			rx = Append.create(Append.create(l, Rev.create(r)), a);
 			assert rx.size() == this.size();
 			return rx;
 		}

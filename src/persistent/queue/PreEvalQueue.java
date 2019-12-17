@@ -2,7 +2,7 @@ package persistent.queue;
 
 import persistent.PQueue;
 import persistent.PStack;
-import persistent.stack.AppendStack;
+import persistent.helper.Append;
 import persistent.stack.PersistStack;
 
 /**
@@ -82,7 +82,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 		public PStack<T> push(T value) {
 			PStack<T> t = PersistStack.create();
 			t = t.push(value);
-			return AppendStack.create(t, this);
+			return Append.create(t, this);
 		}
 
 		@Override
@@ -95,7 +95,7 @@ public class PreEvalQueue<T> implements PQueue<T> {
 			}
 			PStack<T> t = PersistStack.create();
 			t = t.push(r.top());
-			pop = new Rot(l.pop(), r.pop(), AppendStack.create(t, a));
+			pop = new Rot(l.pop(), r.pop(), Append.create(t, a));
 			return pop;
 		}
 	}
