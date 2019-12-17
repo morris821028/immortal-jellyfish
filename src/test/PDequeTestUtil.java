@@ -15,10 +15,10 @@ public class PDequeTestUtil {
 		PDeque<Integer> stk3 = stk2.popBack();
 		PDeque<Integer> stk4 = stk3.pushBack(3);
 
-		assert stk1.back() == 1;
-		assert stk2.back() == 2;
-		assert stk3.back() == 1;
-		assert stk4.back() == 3;
+		Assertions.assertEquals(1, stk1.back());
+		Assertions.assertEquals(2, stk2.back());
+		Assertions.assertEquals(1, stk3.back());
+		Assertions.assertEquals(3, stk4.back());
 
 		final int n = 1000000;
 		for (int i = 0; i < n; i++) {
@@ -37,7 +37,7 @@ public class PDequeTestUtil {
 		Assertions.assertEquals(stk.isEmpty(), true);
 		System.out.println("testDequeAsStackBack() pass");
 	}
-	
+
 	public static void testDequeAsStackFront(final PDeque<Integer> empty) {
 		PDeque<Integer> stk = empty;
 		PDeque<Integer> stk1 = stk.pushFront(1);
@@ -45,10 +45,10 @@ public class PDequeTestUtil {
 		PDeque<Integer> stk3 = stk2.popFront();
 		PDeque<Integer> stk4 = stk3.pushFront(3);
 
-		assert stk1.front() == 1;
-		assert stk2.front() == 2;
-		assert stk3.front() == 1;
-		assert stk4.front() == 3;
+		Assertions.assertEquals(1, stk1.front());
+		Assertions.assertEquals(2, stk2.front());
+		Assertions.assertEquals(1, stk3.front());
+		Assertions.assertEquals(3, stk4.front());
 
 		final int n = 1000000;
 		for (int i = 0; i < n; i++) {
@@ -76,14 +76,14 @@ public class PDequeTestUtil {
 		PDeque<Integer> que3 = que2.popFront();
 		PDeque<Integer> que4 = que3.pushBack(3);
 
-		assert que1.front() == 1;
-		assert que2.front() == 1;
-		assert que3.front() == 2;
-		assert que4.front() == 2;
+		Assertions.assertEquals(1, que1.front());
+		Assertions.assertEquals(1, que2.front());
+		Assertions.assertEquals(2, que3.front());
+		Assertions.assertEquals(2, que4.front());
 
 		for (int i = 0; i < 1000000; i++) {
 			que = que.pushBack(i);
-			Assertions.assertEquals(que.size(), i+1L);
+			Assertions.assertEquals(que.size(), i + 1L);
 		}
 		for (int i = 0; i < 1000000; i++) {
 			PDeque<Integer> t = que.pushBack(1);
@@ -107,14 +107,14 @@ public class PDequeTestUtil {
 		PDeque<Integer> que3 = que2.popBack();
 		PDeque<Integer> que4 = que3.pushFront(3);
 
-		assert que1.back() == 1;
-		assert que2.back() == 1;
-		assert que3.back() == 2;
-		assert que4.back() == 2;
+		Assertions.assertEquals(1, que1.back());
+		Assertions.assertEquals(1, que2.back());
+		Assertions.assertEquals(2, que3.back());
+		Assertions.assertEquals(2, que4.back());
 
 		for (int i = 0; i < 1000000; i++) {
 			que = que.pushFront(i);
-			Assertions.assertEquals(que.size(), i+1L);
+			Assertions.assertEquals(que.size(), i + 1L);
 		}
 		for (int i = 0; i < 1000000; i++) {
 			PDeque<Integer> t = que.pushFront(1);
