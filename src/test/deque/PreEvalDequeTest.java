@@ -20,10 +20,15 @@ public class PreEvalDequeTest {
 	@Test
 	public void testDequeAsQueue() {
 		PDequeTestUtil.testDequeAsQueue(PreEvalDeque.create());
-	}
+	} 
 
 	@Test
 	public void testDequeAsRevQueue() {
 		PDequeTestUtil.testDequeAsRevQueue(PreEvalDeque.create());
+	}
+
+	@Test
+	public void testDequeAsSliding() {
+		PDequeTestUtil.testDequeAsSliding(PreEvalDeque.create());
 	}
 }

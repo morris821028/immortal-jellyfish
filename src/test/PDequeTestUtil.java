@@ -81,21 +81,21 @@ public class PDequeTestUtil {
 		Assertions.assertEquals(2, que3.front());
 		Assertions.assertEquals(2, que4.front());
 
-		for (int i = 0; i < 1000000; i++) {
+		int n = 1000000;
+		for (int i = 0; i < n; i++) {
 			que = que.pushBack(i);
 			Assertions.assertEquals(que.size(), i + 1L);
 		}
-		for (int i = 0; i < 1000000; i++) {
+		for (int i = 0; i < n; i++) {
 			PDeque<Integer> t = que.pushBack(1);
 			Integer v = t.front();
 			Assertions.assertEquals(v, 0);
 		}
-		for (int i = 0; i < 1000000; i++) {
+		for (int i = 0; i < n; i++) {
 			Integer v = que.front();
 			Assertions.assertEquals(v, i);
-			assert v == i;
 			que = que.popFront();
-			Assertions.assertEquals(que.size(), 1000000 - i - 1);
+			Assertions.assertEquals(que.size(), n - i - 1);
 		}
 		System.out.println("testDequeAsQueue() pass");
 	}
@@ -112,22 +112,44 @@ public class PDequeTestUtil {
 		Assertions.assertEquals(2, que3.back());
 		Assertions.assertEquals(2, que4.back());
 
-		for (int i = 0; i < 1000000; i++) {
+		int n = 1000000;
+		for (int i = 0; i < n; i++) {
 			que = que.pushFront(i);
-			Assertions.assertEquals(que.size(), i + 1L);
+			Assertions.assertEquals(i + 1L, que.size());
 		}
-		for (int i = 0; i < 1000000; i++) {
+		for (int i = 0; i < n; i++) {
 			PDeque<Integer> t = que.pushFront(1);
 			Integer v = t.back();
-			Assertions.assertEquals(v, 0);
+			Assertions.assertEquals(0, v);
 		}
-		for (int i = 0; i < 1000000; i++) {
+		for (int i = 0; i < n; i++) {
 			Integer v = que.back();
-			Assertions.assertEquals(v, i);
-			assert v == i;
+			Assertions.assertEquals(i, v);
 			que = que.popBack();
-			Assertions.assertEquals(que.size(), 1000000 - i - 1);
+			Assertions.assertEquals(n - i - 1, que.size());
 		}
 		System.out.println("testDequeAsRevQueue() pass");
+	}
+
+	public static void testDequeAsSliding(final PDeque<Integer> empty) {
+		PDeque<Integer> que = empty;
+
+		int m = 100000;
+		int n = 1000000;
+		for (int i = 0; i < m; i++) {
+			que = que.pushBack(i);
+			Assertions.assertEquals(i + 1L, que.size());
+		}
+
+		for (int i = m; i < n; i++) {
+			Integer v = que.back();
+			Assertions.assertEquals(i - 1, v);
+			v = que.front();
+			Assertions.assertEquals(i - m, v);
+			que = que.popFront();
+			que = que.pushBack(i);
+			Assertions.assertEquals(m, que.size());
+		}
+		System.out.println("testDequeAsSliding() pass");
 	}
 }
