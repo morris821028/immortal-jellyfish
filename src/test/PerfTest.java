@@ -3,6 +3,7 @@ package test;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import persistent.PDeque;
@@ -61,6 +62,7 @@ class PerfTest {
 		System.out.printf("Time: %f\n\n", time / 10e+9);
 	}
 
+	@Disabled
 	@Test
 	void test() {
 		test(() -> testGoldenStack());
