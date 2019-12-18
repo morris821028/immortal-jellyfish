@@ -133,6 +133,15 @@ public class PDequeTestUtil {
 
 	public static void testDequeAsSliding(final PDeque<Integer> empty) {
 		PDeque<Integer> que = empty;
+		PDeque<Integer> que1 = que.pushFront(1);
+		PDeque<Integer> que2 = que1.pushBack(2);
+		PDeque<Integer> que3 = que2.popFront();
+		PDeque<Integer> que4 = que3.pushFront(3);
+
+		Assertions.assertEquals(1, que1.back());
+		Assertions.assertEquals(2, que2.back());
+		Assertions.assertEquals(2, que3.front());
+		Assertions.assertEquals(2, que4.back());
 
 		int m = 100000;
 		int n = 1000000;
