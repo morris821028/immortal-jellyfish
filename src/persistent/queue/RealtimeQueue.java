@@ -82,7 +82,7 @@ public class RealtimeQueue<T> implements PQueue<T> {
 		return size;
 	}
 
-	public RealtimeQueue<T> clear() {
+	public PQueue<T> clear() {
 		return create();
 	}
 
@@ -92,13 +92,15 @@ public class RealtimeQueue<T> implements PQueue<T> {
 	}
 
 	@Override
-	public RealtimeQueue<T> push(T value) {
+	public PQueue<T> push(T value) {
 		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
 				headCopied);
 	}
 
 	@Override
-	public RealtimeQueue<T> pop() {
+	public PQueue<T> pop() {
+		if (size() <= 1)
+			return create();
 		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied);
 	}
 
@@ -155,7 +157,7 @@ public class RealtimeQueue<T> implements PQueue<T> {
 				headCopied);
 	}
 
-	private static <T> RealtimeQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
+	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
 			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
 				headReverseTo, headCopied);
