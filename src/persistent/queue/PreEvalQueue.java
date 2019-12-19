@@ -16,7 +16,7 @@ import persistent.util.PCollections;
  *
  * @param <T> The type of element
  */
-public class PreEvalQueue<T> implements PQueue<T> {
+public final class PreEvalQueue<T> implements PQueue<T> {
 	@SuppressWarnings("rawtypes")
 	private static final PreEvalQueue<?> EMPTY = new PreEvalQueue();
 
@@ -118,10 +118,12 @@ public class PreEvalQueue<T> implements PQueue<T> {
 		}
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return l.isEmpty();
 	}
 
+	@Override
 	public int size() {
 		return l.size() + r.size();
 	}
@@ -130,14 +132,17 @@ public class PreEvalQueue<T> implements PQueue<T> {
 		return create();
 	}
 
+	@Override
 	public T front() {
 		return l.top();
 	}
 
+	@Override
 	public PreEvalQueue<T> push(T value) {
 		return new PreEvalQueue<>(l, r.push(value), b);
 	}
 
+	@Override
 	public PreEvalQueue<T> pop() {
 		if (size() == 1)
 			return create();

@@ -32,6 +32,11 @@ public class PQueueTestUtil {
 			Assertions.assertEquals(0, v);
 		}
 		for (int i = 0; i < n; i++) {
+			PQueue<Integer> t = que.pop();
+			Integer v = t.front();
+			Assertions.assertEquals(1, v);
+		}
+		for (int i = 0; i < n; i++) {
 			Integer v = que.front();
 			Assertions.assertEquals(i, v);
 			que = que.pop();
