@@ -59,6 +59,7 @@ public class RealtimeQueue<T> implements PQueue<T> {
 				this.head = head;
 				this.tail = PCollections.emptyStack();
 
+				// initiate the transfer process
 				this.tailReverseFrom = tail;
 				this.tailReverseTo = PCollections.emptyStack();
 				this.headReverseFrom = head;
@@ -67,10 +68,12 @@ public class RealtimeQueue<T> implements PQueue<T> {
 		}
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return head.isEmpty() && tail.isEmpty();
 	}
 
+	@Override
 	public int size() {
 		int size = head.size() + tail.size() - headCopied;
 		if (tailReverseTo != null) {
@@ -83,24 +86,32 @@ public class RealtimeQueue<T> implements PQueue<T> {
 		return create();
 	}
 
+	@Override
 	public T front() {
 		return head.top();
 	}
 
+	@Override
 	public RealtimeQueue<T> push(T value) {
-		return newPersistQueue(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
 				headCopied);
 	}
 
+	@Override
 	public RealtimeQueue<T> pop() {
-		return newPersistQueue(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
-				headCopied);
+		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied);
 	}
 
+	/**
+	 * Test whether is transferring elements
+	 */
 	private boolean needsStep() {
 		return tailReverseFrom != null && tailReverseTo != null && headReverseFrom != null && headReverseTo != null;
 	}
 
+	/**
+	 * Perform one incremental step
+	 */
 	private static <T> RealtimeQueue<T> step(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
 			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		assert (tailReverseFrom != null && tailReverseTo != null && headReverseFrom != null
@@ -144,10 +155,13 @@ public class RealtimeQueue<T> implements PQueue<T> {
 				headCopied);
 	}
 
-	private static <T> RealtimeQueue<T> newPersistQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
+	private static <T> RealtimeQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
 			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
 				headReverseTo, headCopied);
+
+		// perform 4 steps to the initiates the transfer, and queue operations
+		// TODO: 4 steps for initiates, 3 steps for queue operations
 		if (ret.needsStep())
 			ret = step(ret.head, ret.tail, ret.tailReverseFrom, ret.tailReverseTo, ret.headReverseFrom,
 					ret.headReverseTo, ret.headCopied);
