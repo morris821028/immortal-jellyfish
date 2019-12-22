@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Test;
 
 import persistent.PQueueTestUtil;
 
-public class Realtime4QueueTest {
+public class RealtimeExtraQueueTest {
 	@Test
 	public void testQueue() {
-		Realtime4Queue<Integer> que = Realtime4Queue.create();
-		System.out.println("Realtime4Queue feat.");
+		RealtimeExtraQueue<Integer> que = RealtimeExtraQueue.create();
+		System.out.println("RealtimeEXtraQueue feat.");
 		PQueueTestUtil.testQueue(que);
 	}
 }

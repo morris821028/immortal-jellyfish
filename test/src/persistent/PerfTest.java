@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import persistent.PDeque;
 import persistent.deque.PreEvalDeque;
 import persistent.queue.PreEvalQueue;
-import persistent.queue.RealtimeQueue;
+import persistent.queue.RealtimeExtraQueue;
 import persistent.stack.PersistStack;
 
 class PerfTest {
@@ -33,7 +33,7 @@ class PerfTest {
 	}
 
 	private static void testQueue() {
-		RealtimeQueue<Integer> que = RealtimeQueue.create();
+		RealtimeExtraQueue<Integer> que = RealtimeExtraQueue.create();
 		System.out.println("RealtimeQueue feat.");
 		PQueueTestUtil.testQueue(que);
 	}

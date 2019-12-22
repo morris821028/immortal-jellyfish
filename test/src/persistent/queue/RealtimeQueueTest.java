@@ -3,7 +3,6 @@ package persistent.queue;
 import org.junit.jupiter.api.Test;
 
 import persistent.PQueueTestUtil;
-import persistent.queue.RealtimeQueue;
 
 public class RealtimeQueueTest {
 	@Test
