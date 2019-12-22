@@ -3,7 +3,7 @@ package persistent.util;
 import persistent.PDeque;
 import persistent.PQueue;
 import persistent.PStack;
-import persistent.deque.PreEvalDeque;
+import persistent.deque.RealtimeDeque;
 import persistent.queue.RealtimeQueue;
 import persistent.stack.PersistStack;
 
@@ -20,6 +20,6 @@ public class PCollections {
 	}
 
 	public static <T> PDeque<T> emptyDeque() {
-		return PreEvalDeque.create();
+		return RealtimeDeque.create();
 	}
 }
