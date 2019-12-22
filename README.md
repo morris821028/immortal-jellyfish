@@ -2,7 +2,16 @@
 
 > Purely Functional Implementation in Java ([Persistent Data Structure](https://en.wikipedia.org/wiki/Persistent_data_structure))
 
+The library includes immutable collections, like stack, queue, and [deque](https://en.wikipedia.org/wiki/Double-ended_queue).
+
+## Features
+
+* Efficient operation in real time
+* Efficient memory management
+
 # Example
+
+See more detail at [wiki page](https://github.com/morris821028/PersistentDataStructure/wiki).
 
 ## Stack ##
 
@@ -68,6 +77,10 @@ Assertions.assertEquals(2, que2.back());
 Assertions.assertEquals(2, que3.front());
 Assertions.assertEquals(2, que4.back());
 ```
+
+# Implementation Note
+
+Coming soon
 
 # Related Repository
 
