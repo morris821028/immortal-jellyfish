@@ -373,48 +373,31 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				continue;
 			}
 
-			if (sb) {
-				if (!sAux.isEmpty() && sCopied < lhs.size()) {
-					sCopied++;
-					sNew = sNew.push(sAux.top());
-					sAux = sAux.pop();
-				}
+			int targetSize = sb ? lhs.size() : rhs.size();
+			if (!sAux.isEmpty() && sCopied < targetSize) {
+				sCopied++;
+				sNew = sNew.push(sAux.top());
+				sAux = sAux.pop();
+			}
 
-				if (sCopied == lhs.size()) {
-					int m = (sNew.size() + sAux.size()) / 2;
+			if (sCopied == targetSize) {
+				int m = (sNew.size() + sAux.size()) / 2;
+				if (sb) {
 					lhs = Append.create(lhsExtra, sNew);
 					rhs = Append.create(rhsExtra, Take.create(rhs.size() - m - 1, rhs));
-
-					lhsExtra = rhsExtra = null;
-
-					sFrom = sAux = sNew = null;
-
-					bFrom = bAux = bNew = null;
-
-					sCopied = 0;
-					break;
-				}
-			} else {
-				if (!sAux.isEmpty() && sCopied < rhs.size()) {
-					sCopied++;
-					sNew = sNew.push(sAux.top());
-					sAux = sAux.pop();
-				}
-
-				if (sCopied == rhs.size()) {
-					int m = (sNew.size() + sAux.size()) / 2;
+				} else {
 					lhs = Append.create(lhsExtra, Take.create(lhs.size() - m - 1, lhs));
 					rhs = Append.create(rhsExtra, sNew);
-
-					lhsExtra = rhsExtra = null;
-
-					sFrom = sAux = sNew = null;
-
-					bFrom = bAux = bNew = null;
-
-					sCopied = 0;
-					break;
 				}
+
+				lhsExtra = rhsExtra = null;
+
+				sFrom = sAux = sNew = null;
+
+				bFrom = bAux = bNew = null;
+
+				sCopied = 0;
+				break;
 			}
 		}
 		return new RealtimeDeque<>(lhs, rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied, sb,
