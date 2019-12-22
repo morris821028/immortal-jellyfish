@@ -3,7 +3,7 @@ package persistent.helper;
 import persistent.PStack;
 import persistent.stack.PersistStack;
 
-public class Take<T> implements PStack<T> {
+public class Take<T> extends PStack<T> {
 	private final PStack<T> x;
 	private final int n;
 

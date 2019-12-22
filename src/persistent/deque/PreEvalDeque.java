@@ -40,7 +40,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 	private final PStack<T> lHat;
 	private final PStack<T> rHat;
 
-	private class Rot1 implements PStack<T> {
+	private class Rot1 extends PStack<T> {
 		private final int n;
 		private final PStack<T> l;
 		private final PStack<T> r;
@@ -103,7 +103,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 		}
 	}
 
-	private class Rot2 implements PStack<T> {
+	private class Rot2 extends PStack<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;

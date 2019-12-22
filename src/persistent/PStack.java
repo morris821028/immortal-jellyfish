@@ -1,20 +1,71 @@
 package persistent;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 import persistent.stack.PersistStack;
 
-public interface PStack<T> {
-	public boolean isEmpty();
+/**
+ * Persistent/Immutable Stack
+ * 
+ * @author morrsy
+ *
+ * @param <T> The type of element
+ */
+public abstract class PStack<T> implements Iterable<T> {
+	public abstract boolean isEmpty();
 
-	public int size();
+	public abstract int size();
 
-	public T top();
+	public abstract T top();
 
-	public PStack<T> push(T value);
+	public abstract PStack<T> push(T value);
 
-	public PStack<T> pop();
+	public abstract PStack<T> pop();
+
+	/**
+	 * Returns an iterator over the elements in this stack from top to bottom.
+	 * 
+	 * @return an iterator over the elements in this stack from top to bottom.
+	 */
+	@Override
+	public Iterator<T> iterator() {
+		return new StackIterator(this);
+	}
+
+	class StackIterator implements Iterator<T> {
+		private PStack<T> current;
+
+		public StackIterator(PStack<T> topmost) {
+			current = topmost;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return !current.isEmpty();
+		}
+
+		@Override
+		public T next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			T val = current.top();
+			current = current.pop();
+			return val;
+		}
+	}
 
 	public static <T> PStack<T> of(T value) {
 		PStack<T> stk = PersistStack.create();
 		return stk.push(value);
+	}
+
+	public static <T> List<T> toArrayList(PStack<T> stk) {
+		ArrayList<T> ret = new ArrayList<>();
+		for (T val : stk)
+			ret.add(val);
+		return ret;
 	}
 }

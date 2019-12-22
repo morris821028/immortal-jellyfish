@@ -7,7 +7,7 @@ import persistent.PStack;
  *
  * @param <T> The type of element
  */
-public class PersistStack<T> implements PStack<T> {
+public class PersistStack<T> extends PStack<T> {
 	@SuppressWarnings("rawtypes")
 	private static final PersistStack<?> EMPTY = new PersistStack();
 
@@ -54,5 +54,22 @@ public class PersistStack<T> implements PStack<T> {
 
 	public PersistStack<T> pop() {
 		return next != null ? next : create();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("Stack {");
+		sb.append("size = " + size() + ", [");
+		PersistStack<T> u = this;
+		boolean first = true;
+		while (u != null && !u.isEmpty()) {
+			if (!first)
+				sb.append(", ");
+			sb.append(u.top());
+			first = false;
+			u = u.next;
+		}
+		sb.append("]}");
+		return sb.toString();
 	}
 }

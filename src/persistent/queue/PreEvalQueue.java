@@ -29,7 +29,7 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 	private final PStack<T> r;
 	private final PStack<T> b;
 
-	class Rot implements PStack<T> {
+	class Rot extends PStack<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;
