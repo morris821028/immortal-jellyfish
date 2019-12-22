@@ -6,6 +6,16 @@ import persistent.helper.Append;
 import persistent.helper.Take;
 import persistent.util.PCollections;
 
+/**
+ * <p>
+ * Paper: "Real-Time Deques, Multihead Turing Machines, and Purelay Functional
+ * Programming", Tyng-Ruey Chang and Benjamin Goldberg.
+ * </p>
+ * 
+ * @author morrisy
+ * 
+ * @param <T> The type of element
+ */
 public final class RealtimeDeque<T> implements PDeque<T> {
 	@SuppressWarnings("rawtypes")
 	private static final RealtimeDeque<?> EMPTY = new RealtimeDeque();
@@ -15,19 +25,42 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		return (RealtimeDeque<T>) EMPTY;
 	}
 
+	/** The head/front part of deque */
 	protected final PStack<T> lhs;
+	/** The tail/back part of deque */
 	protected final PStack<T> rhs;
 
+	/**
+	 * During transferring, store extra elements for {@link #pushFront(Object)},
+	 * {@link #popFront()}, and {@link #front()}.
+	 */
 	protected final PStack<T> lhsExtra;
+	/**
+	 * During transferring, store extra elements for {@link #pushBack(Object)},
+	 * {@link #popBack()}, and {@link #back()}
+	 */
 	protected final PStack<T> rhsExtra;
 
+	/**
+	 * The small stack, is the smaller stack of two parts in begin. Then, present
+	 * the state of copy transferring.
+	 */
 	protected final PStack<T> sFrom;
+	/** The small auxiliary-stack, store reversed version of {@link #sFrom}. */
 	protected final PStack<T> sAux;
+	/** The final result of smaller stack, replace the smaller one with this. */
 	protected final PStack<T> sNew;
 
+	/**
+	 * The big stack, is the bigger stack of two parts in begin. Then, present the
+	 * state of copy transferring.
+	 */
 	protected final PStack<T> bFrom;
+	/** The big auxiliary-stack, store partial reversed version of {@link #bFrom}. */
 	protected final PStack<T> bAux;
+	/** The final result of bigger stack, replace the bigger one with this. */
 	protected final PStack<T> bNew;
+	/** The counter of copied smaller stack elements. */
 	protected final int sCopied;
 
 	/** True if right-hand-side is bigger. */
@@ -291,7 +324,13 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 	}
 
 	/**
-	 * Perform two incremental steps
+	 * Perform 2 incremental steps. Totally, we will perform {@literal 4n + 6} for
+	 * the transform process.
+	 * 
+	 * @param <T> The type of element
+	 * @param q   The adjusting deque
+	 * @return An adjusted deque by exact 2 steps. If remaining steps is not enough,
+	 *         return the last state.
 	 */
 	private static <T> RealtimeDeque<T> step(final RealtimeDeque<T> q) {
 		if (!q.isTransferring())
@@ -327,7 +366,7 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				sFrom = sFrom.pop();
 			}
 		}
-		
+
 		if (cost == 0)
 			return new RealtimeDeque<>(lhs, rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied, sb,
 					bMove);
@@ -398,23 +437,15 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		boolean init = sAux == null;
 		RealtimeDeque<T> ret = new RealtimeDeque<>(lhs, rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew,
 				sCopied, sb, bMove);
-		init = init && ret.isTransferring();
-		ret = step(ret);
-		ret = step(ret);
-		if (init) {
+		if (init && ret.isTransferring()) {
+			// allocate 6 steps, which violates the invariant
 			ret = step(ret);
 			ret = step(ret);
 			ret = step(ret);
 		}
+		// 4 steps to each operations
+		ret = step(ret);
+		ret = step(ret);
 		return ret;
-	}
-
-	protected void dump() {
-		System.out.printf("size l %d, r %d, %d, sCopied %d\n", lhs.size(), rhs.size(), this.size(), this.sCopied);
-		if (isTransferring()) {
-			System.out.printf("\tlExtra %d, rExtra %d\n", lhsExtra.size(), rhsExtra.size());
-			System.out.printf("\tlNew %d, rNew %d\n", sNew.size(), bNew.size());
-			System.out.printf("\tlAux %d, rAux %d\n", sAux.size(), bAux.size());
-		}
 	}
 }
