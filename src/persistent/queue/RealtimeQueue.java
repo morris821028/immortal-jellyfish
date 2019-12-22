@@ -106,8 +106,7 @@ public final class RealtimeQueue<T> implements PQueue<T> {
 	 * Test whether is transferring elements
 	 */
 	private static boolean needsStep(final RealtimeQueue<?> q) {
-		return q.tailReverseFrom != null && q.tailReverseTo != null && q.headReverseFrom != null
-				&& q.headReverseTo != null;
+		return q.tailReverseFrom != null;
 	}
 
 	/**
