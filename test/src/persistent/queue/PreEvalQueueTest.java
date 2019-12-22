@@ -1,9 +1,9 @@
-package test.queue;
+package persistent.queue;
 
 import org.junit.jupiter.api.Test;
 
+import persistent.PQueueTestUtil;
 import persistent.queue.PreEvalQueue;
-import test.PQueueTestUtil;
 
 public class PreEvalQueueTest {
 	@Test

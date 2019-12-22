@@ -1,9 +1,9 @@
-package test.stack;
+package persistent.stack;
 
 import org.junit.jupiter.api.Test;
 
+import persistent.PStackTestUtil;
 import persistent.stack.PersistStack;
-import test.PStackTestUtil;
 
 public class PersistStackTest {
 	@Test

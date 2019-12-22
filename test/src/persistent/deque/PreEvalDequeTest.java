@@ -1,10 +1,10 @@
-package test.deque;
+package persistent.deque;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import persistent.PDequeTestUtil;
 import persistent.deque.PreEvalDeque;
-import test.PDequeTestUtil;
 
 public class PreEvalDequeTest {
 	@Test

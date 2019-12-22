@@ -1,4 +1,4 @@
-package test;
+package persistent;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
