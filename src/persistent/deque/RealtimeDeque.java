@@ -185,10 +185,8 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				tmp = tmp.popFront();
 				T z = tmp.front();
 				// [w, x, y, z] => [w, x] [y, z]
-				PStack<T> s = PCollections.emptyStack();
-				s = s.push(x).push(w);
-				PStack<T> b = PCollections.emptyStack();
-				b = b.push(y).push(z);
+				PStack<T> s = PStack.of(x, w);
+				PStack<T> b = PStack.of(y, z);
 				return new RealtimeDeque<>(s, b, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied, sb,
 						bMove);
 			} else {
@@ -218,10 +216,8 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				T y = tmp.front();
 				T z = value;
 				// [w, x, y, z] => [w, x] [y, z]
-				PStack<T> s = PCollections.emptyStack();
-				s = s.push(x).push(w);
-				PStack<T> b = PCollections.emptyStack();
-				b = b.push(y).push(z);
+				PStack<T> s = PStack.of(x, w);
+				PStack<T> b = PStack.of(y, z);
 				return new RealtimeDeque<>(s, b, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied, sb,
 						bMove);
 			} else {
@@ -244,24 +240,12 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 			assert !isTransferring();
 			if (size == 1)
 				return create();
-			PStack<T> tmp = lhs;
-			Object[] buf = new Object[size];
-			for (int i = 0; !tmp.isEmpty(); i++) {
-				buf[i] = tmp.top();
-				tmp = tmp.pop();
-			}
-			tmp = rhs;
-			for (int i = size - 1; !tmp.isEmpty(); i--) {
-				buf[i] = tmp.top();
-				tmp = tmp.pop();
-			}
-			assert lhs.size() + rhs.size() == size;
+			T[] buf = flattenDeque();
 			PStack<T> nl = PCollections.emptyStack();
 			PStack<T> nr = PCollections.emptyStack();
 			for (int i = size - 1; i >= 1; i--) {
 				assert buf[i] != null;
-				@SuppressWarnings("unchecked")
-				T val = (T) buf[i];
+				T val = buf[i];
 				if (i == 1)
 					nl = nl.push(val);
 				else
@@ -287,24 +271,12 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 			assert !isTransferring();
 			if (size == 1)
 				return create();
-			PStack<T> tmp = lhs;
-			Object[] buf = new Object[size];
-			for (int i = 0; !tmp.isEmpty(); i++) {
-				buf[i] = tmp.top();
-				tmp = tmp.pop();
-			}
-			tmp = rhs;
-			for (int i = size - 1; !tmp.isEmpty(); i--) {
-				buf[i] = tmp.top();
-				tmp = tmp.pop();
-			}
-			assert lhs.size() + rhs.size() == size;
+			T[] buf = flattenDeque();
 			PStack<T> nl = PCollections.emptyStack();
 			PStack<T> nr = PCollections.emptyStack();
 			for (int i = size - 2; i >= 0; i--) {
 				assert buf[i] != null;
-				@SuppressWarnings("unchecked")
-				T val = (T) buf[i];
+				T val = buf[i];
 				if (i == 0)
 					nl = nl.push(val);
 				else
@@ -321,6 +293,24 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				return create(lhs, rhs.pop(), lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied, sb,
 						bMove);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private T[] flattenDeque() {
+		int size = size();
+		assert size <= 4;
+		PStack<T> tmp = lhs;
+		Object[] buf = new Object[size];
+		for (int i = 0; !tmp.isEmpty(); i++) {
+			buf[i] = tmp.top();
+			tmp = tmp.pop();
+		}
+		tmp = rhs;
+		for (int i = size - 1; !tmp.isEmpty(); i--) {
+			buf[i] = tmp.top();
+			tmp = tmp.pop();
+		}
+		return (T[]) buf;
 	}
 
 	/**

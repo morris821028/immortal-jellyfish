@@ -62,6 +62,11 @@ public abstract class PStack<T> implements Iterable<T> {
 		return stk.push(value);
 	}
 
+	public static <T> PStack<T> of(T bottom, T top) {
+		PStack<T> stk = PersistStack.create();
+		return stk.push(bottom).push(top);
+	}
+
 	public static <T> List<T> toArrayList(PStack<T> stk) {
 		ArrayList<T> ret = new ArrayList<>();
 		for (T val : stk)
