@@ -5,8 +5,7 @@ import persistent.PStack;
 import persistent.util.PCollections;
 
 /**
- * Paper: "Real Time Queue Operations in Pure LISP", Hood, Robert T. & Melville,
- * Robert C.
+ * Paper: "Real Time Queue Operations in Pure LISP", Hood, Robert T. & Melville, Robert C.
  * 
  * @author morrisy
  *
@@ -34,8 +33,9 @@ public final class RealtimeQueue<T> implements PQueue<T> {
 		this(PCollections.emptyStack(), PCollections.emptyStack(), null, null, null, null, 0);
 	}
 
-	private RealtimeQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom, PStack<T> tailReverseTo,
-			PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
+	private RealtimeQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
+			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo,
+			int headCopied) {
 		this.headCopied = headCopied;
 		if (tail.size() <= head.size()) {
 			this.head = head;
@@ -75,9 +75,9 @@ public final class RealtimeQueue<T> implements PQueue<T> {
 
 	@Override
 	public int size() {
-		int size = head.size() + tail.size() - headCopied;
+		int size = head.size() + tail.size();
 		if (tailReverseTo != null) {
-			size += tailReverseTo.size() + tailReverseFrom.size();
+			size += tailReverseTo.size() + tailReverseFrom.size() - headCopied;
 		}
 		return size;
 	}
@@ -93,13 +93,14 @@ public final class RealtimeQueue<T> implements PQueue<T> {
 
 	@Override
 	public PQueue<T> push(T value) {
-		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
-				headCopied);
+		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom,
+				headReverseTo, headCopied);
 	}
 
 	@Override
 	public PQueue<T> pop() {
-		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied);
+		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom,
+				headReverseTo, headCopied);
 	}
 
 	/**
@@ -110,10 +111,11 @@ public final class RealtimeQueue<T> implements PQueue<T> {
 	}
 
 	/**
-	 * Perform two incremental steps
+	 * Perform 5 incremental steps
 	 */
 	private static <T> RealtimeQueue<T> step(final RealtimeQueue<T> q) {
-		assert needsStep(q) : "Internal error: invariant failure.";
+		if (!needsStep(q))
+			return q;
 
 		PStack<T> head = q.head;
 		PStack<T> tail = q.tail;
@@ -157,21 +159,18 @@ public final class RealtimeQueue<T> implements PQueue<T> {
 				headCopied = 0;
 			}
 		}
-		return new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
-				headCopied);
+		return new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
+				headReverseTo, headCopied);
 	}
 
 	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
-			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
-		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
-				headReverseTo, headCopied);
+			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo,
+			int headCopied) {
+		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo,
+				headReverseFrom, headReverseTo, headCopied);
 
-		// perform 4 steps to the initiates the transfer, and queue operations
-		// TODO: 4 steps for initiates, 3 steps for queue operations
-		if (needsStep(ret))
-			ret = step(ret);
-		if (needsStep(ret))
-			ret = step(ret);
+		ret = step(ret);
+		ret = step(ret);
 		return ret;
 	}
 }
