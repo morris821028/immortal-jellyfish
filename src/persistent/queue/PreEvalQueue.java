@@ -27,18 +27,13 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 
 	private final PStack<T> l;
 	private final PStack<T> r;
-	private final PStack<T> b;
+	private final int hsize;
 
 	class Rot extends PStack<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;
 		private final int size;
-
-		/** cache top element */
-		private T top;
-		/** cache immutable pop result */
-		private PStack<T> pop;
 
 		Rot(PStack<T> l, PStack<T> r) {
 			this(l, r, PCollections.emptyStack());
@@ -64,57 +59,46 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 
 		@Override
 		public T top() {
-			if (top != null)
-				return top;
 			if (!l.isEmpty()) {
-				top = l.top();
-				return top;
+				return l.top();
 			}
 			if (!r.isEmpty()) {
-				top = r.top();
-				return top;
+				return r.top();
 			}
-			top = a.top();
-			return top;
+			return a.top();
 		}
 
 		@Override
 		public PStack<T> push(T value) {
-			PStack<T> t = PCollections.emptyStack();
-			t = t.push(value);
+			PStack<T> t = PStack.of(value);
 			return Append.create(t, this);
 		}
 
 		@Override
 		public PStack<T> pop() {
-			if (pop != null)
-				return pop;
 			if (r.size() == 1) {
-				pop = a;
 				return a;
 			}
-			PStack<T> t = PCollections.emptyStack();
-			t = t.push(r.top());
-			pop = new Rot(l.pop(), r.pop(), Append.create(t, a));
-			return pop;
+			PStack<T> t = PStack.of(r.top());
+			return new Rot(l.pop(), r.pop(), Append.create(t, a));
 		}
 	}
 
 	private PreEvalQueue() {
 		this.l = PCollections.emptyStack();
 		this.r = l;
-		this.b = l;
+		this.hsize = 0;
 	}
 
-	private PreEvalQueue(PStack<T> l, PStack<T> r, PStack<T> b) {
-		if (!b.isEmpty()) {
+	private PreEvalQueue(PStack<T> l, PStack<T> r, int hsize) {
+		if (hsize > 0) {
 			this.l = l;
 			this.r = r;
-			this.b = b.pop();
+			this.hsize = hsize - 1;
 		} else {
 			this.r = PCollections.emptyStack();
 			this.l = new Rot(l, r);
-			this.b = this.l;
+			this.hsize = this.l.size();
 		}
 	}
 
@@ -139,13 +123,13 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 
 	@Override
 	public PreEvalQueue<T> push(T value) {
-		return new PreEvalQueue<>(l, r.push(value), b);
+		return new PreEvalQueue<>(l, r.push(value), hsize);
 	}
 
 	@Override
 	public PreEvalQueue<T> pop() {
 		if (size() == 1)
 			return create();
-		return new PreEvalQueue<>(l.pop(), r, b);
+		return new PreEvalQueue<>(l.pop(), r, hsize);
 	}
 }
