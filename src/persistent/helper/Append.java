@@ -27,9 +27,7 @@ public class Append<T> extends PStack<T> {
 
 	@Override
 	public T top() {
-		T v = l.top();
-		assert v != null : String.format("%d %s %b", l.size(), l.getClass(), isEmpty());
-		return v;
+		return l.top();
 	}
 
 	@Override
