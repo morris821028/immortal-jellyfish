@@ -1,7 +1,5 @@
 package persistent.array;
 
-import java.util.Arrays;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +56,7 @@ public class TreeListTest {
 		fib[0] = 1;
 		fib[1] = 1;
 		for (int i = 2; i < 32; i++) {
-			fib[i] = fib[i-1] + fib[i-2];
+			fib[i] = fib[i - 1] + fib[i - 2];
 		}
 
 		for (int i = 0; i < 32; i++)
@@ -74,7 +72,7 @@ public class TreeListTest {
 			for (int j = 0; j <= i; j++)
 				Assertions.assertEquals(fib[j], a.get(j), "" + j);
 		}
-		
+
 		a = TreeList.create();
 		int n = 1000000;
 		for (int i = 0; i < 1000000; i++) {
@@ -82,10 +80,20 @@ public class TreeListTest {
 		}
 
 		for (int i = 0; i < n; i++)
-			a = a.set(i, n-i);
-		
+			a = a.set(i, n - i);
+
 		for (int i = 0; i < a.size(); i++)
-			Assertions.assertEquals(n-i, a.get(i));
+			Assertions.assertEquals(n - i, a.get(i));
+	}
+
+	@Test
+	public void testToString() {
+		PList<Object> a = TreeList.create();
+		a = a.pushBack(3);
+		a = a.pushBack(".");
+		a = a.pushBack(1);
+		a = a.pushBack(4);
+
+		Assertions.assertEquals("{size=4, [3, ., 1, 4]}", a.toString());
 	}
 }
-
