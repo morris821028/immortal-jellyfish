@@ -7,18 +7,40 @@ import persistent.PStack;
 import persistent.helper.Append;
 import persistent.util.PCollections;
 
+/**
+ * <p>
+ * The balanced-tree based array list. The time complexity of each operation is
+ * O(log n). After m operations, the memory consumption is at most O(m log m).
+ * </p>
+ * 
+ * @author morrisy
+ *
+ * @param <T> The type of elements held in this collection
+ */
 public class TreeList<T> extends PList<T> {
 	@SuppressWarnings("rawtypes")
+	/** The empty list. */
 	private static final TreeList<?> EMPTY = new TreeList();
 
+	/**
+	 * Returns an empty list.
+	 * 
+	 * @param <T> The type of elements held in this collection
+	 * @return An empty list.
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> TreeList<T> create() {
 		return (TreeList<T>) EMPTY;
 	}
 
+	/**
+	 * The helper counter to record tree height. Support size from 0 to 32.
+	 */
 	private static final CountNode<?>[] COUNTS = CountNode.build();
 
+	/** Pointer to tree root node. */
 	private final PStack<Node<T>> rNodes;
+	/** The number of elements in this list. */
 	private final int size;
 
 	private TreeList() {
@@ -41,6 +63,14 @@ public class TreeList<T> extends PList<T> {
 		return size;
 	}
 
+	/**
+	 * Returns the element at the specified position in this list.
+	 * 
+	 * @param index index of the element to return
+	 *
+	 * @return the element at the specified position in this list
+	 * @throws IndexOutOfBoundsException {@inheritDoc}
+	 */
 	@Override
 	public T get(int index) {
 		if (index < 0 || index >= size)
