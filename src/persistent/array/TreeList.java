@@ -1,7 +1,10 @@
 package persistent.array;
 
+import java.util.NoSuchElementException;
+
 import persistent.PList;
 import persistent.PStack;
+import persistent.helper.Append;
 import persistent.util.PCollections;
 
 public class TreeList<T> extends PList<T> {
@@ -13,6 +16,8 @@ public class TreeList<T> extends PList<T> {
 		return (TreeList<T>) EMPTY;
 	}
 
+	private static final CountNode<?>[] COUNTS = CountNode.build();
+
 	private final PStack<Node<T>> rNodes;
 	private final int size;
 
@@ -23,6 +28,7 @@ public class TreeList<T> extends PList<T> {
 	private TreeList(PStack<Node<T>> rNodes, int size) {
 		this.rNodes = rNodes;
 		this.size = size;
+		assert rNodes.size() < 32;
 	}
 
 	@Override
@@ -62,11 +68,11 @@ public class TreeList<T> extends PList<T> {
 		assert u.size() > index;
 		while (u instanceof TreeNode) {
 			TreeNode<T> tn = (TreeNode<T>) u;
-			if (index < u.size() / 2) {
+			if (index < tn.lson.size()) {
 				u = tn.lson;
 			} else {
 				u = tn.rson;
-				index -= tn.size() / 2;
+				index -= tn.lson.size();
 			}
 		}
 		assert index == 0;
@@ -75,10 +81,39 @@ public class TreeList<T> extends PList<T> {
 
 	@Override
 	public PList<T> set(int index, T value) {
-		// TODO Auto-generated method stub
-		return null;
+		if (index < 0 || index >= size())
+			throw new IndexOutOfBoundsException();
+
+		return new TreeList<>(setValue(rNodes, size(), index, value), size);
 	}
 
+	private static <T> PStack<Node<T>> setValue(PStack<Node<T>> u, int size, int index, T value) {
+		Node<T> v = u.top();
+		if (v instanceof CountNode)
+			return setValue(u.pop(), size, index, value).push(v);
+
+		int b = v.size();
+		if (index >= size - b)
+			return u.pop().push(setValue(v, b - (size - index), value));
+		return setValue(u.pop(), size - b, index, value).push(v);
+	}
+
+	private static <T> Node<T> setValue(Node<T> u, int index, T value) {
+		assert u.size() > index;
+		if (u instanceof DataNode) {
+			assert index == 0;
+			return new DataNode<>(value);
+		}
+
+		TreeNode<T> tn = (TreeNode<T>) u;
+		if (index < tn.lson.size()) {
+			return new TreeNode<>(setValue(tn.lson, index, value), tn.rson);
+		} else {
+			return new TreeNode<>(tn.lson, setValue(tn.rson, index - tn.lson.size, value));
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public PList<T> pushBack(T value) {
 		Node<T> data = new DataNode<>(value);
@@ -99,23 +134,53 @@ public class TreeList<T> extends PList<T> {
 			if (d.size == 1) {
 				u = u.pop();
 			} else {
-				u = u.pop().push(new CountNode<>(d.size - 1));
+				u = u.pop().push((CountNode<T>) COUNTS[d.size - 1]);
 			}
 		}
 
 		u = u.push(data);
 		if (dep > 0)
-			u = u.push(new CountNode<>(dep));
+			u = u.push((CountNode<T>) COUNTS[dep]);
 		return new TreeList<>(u, size + 1);
 	}
 
+	@SuppressWarnings({ "unchecked" })
 	@Override
 	public PList<T> popBack() {
-		// TODO Auto-generated method stub
-		return null;
+		if (isEmpty())
+			throw new NoSuchElementException();
+		if (size == 1)
+			return create();
+
+		PStack<Node<T>> u = rNodes;
+		int dep = 0;
+		if (u.top() instanceof CountNode) {
+			dep = ((CountNode<T>) u.top()).size;
+			u = u.pop();
+		}
+
+		Node<T> r = u.top();
+		PStack<Node<T>> f = PCollections.emptyStack();
+		for (int i = 0; i < dep; i++) {
+			TreeNode<T> tn = (TreeNode<T>) r;
+			f = f.push(tn.lson);
+			r = tn.rson;
+		}
+
+		PStack<Node<T>> v = u.pop();
+		if (v.isEmpty())
+			return new TreeList<>(f, size - 1);
+
+		if (v.top() instanceof CountNode) {
+			int c = ((CountNode<T>) v.top()).size + 1;
+			v = v.pop().push((CountNode<T>) COUNTS[c]);
+		} else {
+			v = v.push((CountNode<T>) COUNTS[1]);
+		}
+		return new TreeList<>(Append.create(f, v), size - 1);
 	}
 
-	private abstract static class Node<T> {
+	private abstract static class Node<T> { // NOSONAR
 		protected final int size;
 
 		Node(int size) {
@@ -127,7 +192,7 @@ public class TreeList<T> extends PList<T> {
 		}
 	}
 
-	private static class TreeNode<T> extends Node<T> {
+	private static final class TreeNode<T> extends Node<T> {
 		private final Node<T> lson;
 		private final Node<T> rson;
 
@@ -135,11 +200,11 @@ public class TreeList<T> extends PList<T> {
 			super(l.size() + r.size());
 			lson = l;
 			rson = r;
-			assert (size&(-size)) == size;
+			assert (size & (-size)) == size;
 		}
 	}
 
-	private static class DataNode<T> extends Node<T> {
+	private static final class DataNode<T> extends Node<T> {
 		private final T val;
 
 		DataNode(T val) {
@@ -148,9 +213,17 @@ public class TreeList<T> extends PList<T> {
 		}
 	}
 
-	private class CountNode<T> extends Node<T> {
-		CountNode(int size) {
+	private static final class CountNode<T> extends Node<T> {
+		private CountNode(int size) {
 			super(size);
+		}
+
+		@SuppressWarnings("rawtypes")
+		public static CountNode[] build() {
+			CountNode[] ret = new CountNode[32];
+			for (int i = 0; i < 32; i++)
+				ret[i] = new CountNode(i);
+			return ret;
 		}
 	}
 }
