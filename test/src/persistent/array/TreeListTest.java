@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import persistent.PList;
+import persistent.util.PCollections;
 
 public class TreeListTest {
 	@Test
@@ -99,7 +100,7 @@ public class TreeListTest {
 
 	@Test
 	public void testDemo() {
-		PList<Integer> a = TreeList.create();
+		PList<Integer> a = PCollections.emptyList();
 		for (int i = 0; i < 10; i++)
 					a = a.pushBack(null);
 		a = a.set(0, 1);

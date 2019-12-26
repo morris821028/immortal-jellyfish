@@ -88,7 +88,7 @@ Assertions.assertEquals(2, que4.back());
 Implementation option: Balanced Tree
 
 ```java
-PList<Integer> a = TreeList.create();
+PList<Integer> a = PCollections.emptyList();
 for (int i = 0; i < 10; i++)
     a = a.pushBack(null);
 a = a.set(0, 1);
