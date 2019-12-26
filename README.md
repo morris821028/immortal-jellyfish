@@ -2,7 +2,7 @@
 
 > Purely Functional Implementation in Java ([Persistent Data Structure](https://en.wikipedia.org/wiki/Persistent_data_structure))
 
-The library includes immutable collections, like stack, queue, and [deque](https://en.wikipedia.org/wiki/Double-ended_queue).
+The library includes immutable collections, like stack, queue, [deque](https://en.wikipedia.org/wiki/Double-ended_queue), and [vector/array](https://en.wikipedia.org/wiki/Array_data_structure).
 
 ## Features
 
@@ -76,6 +76,28 @@ Assertions.assertEquals(1, que1.back());
 Assertions.assertEquals(2, que2.back());
 Assertions.assertEquals(2, que3.front());
 Assertions.assertEquals(2, que4.back());
+```
+
+## Array (Vector, List) ##
+
+* `pushBack(value)`: O(log n)
+* `popBack()`: O(log n)
+* `set(index, value)`: O(log n)
+* `get(index)`: O(log n)
+
+Implementation option: Balanced Tree
+
+```java
+PList<Integer> a = TreeList.create();
+for (int i = 0; i < 10; i++)
+    a = a.pushBack(null);
+a = a.set(0, 1);
+a = a.set(1, 1);
+for (int i = 2; i < 10; i++)
+    a = a.set(i, a.get(i - 1) + a.get(i - 2));
+Assertions.assertEquals("{size=10, [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]}", a.toString());
+a = a.popBack();
+Assertions.assertEquals("{size=9, [1, 1, 2, 3, 5, 8, 13, 21, 34]}", a.toString());
 ```
 
 # Implementation Note
