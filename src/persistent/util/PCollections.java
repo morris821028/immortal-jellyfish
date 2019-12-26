@@ -1,8 +1,10 @@
 package persistent.util;
 
 import persistent.PDeque;
+import persistent.PList;
 import persistent.PQueue;
 import persistent.PStack;
+import persistent.array.TreeList;
 import persistent.deque.RealtimeDeque;
 import persistent.queue.RealtimeQueue;
 import persistent.stack.PersistStack;
@@ -39,5 +41,15 @@ public class PCollections {
 	 */
 	public static <T> PDeque<T> emptyDeque() {
 		return RealtimeDeque.create();
+	}
+
+	/**
+	 * Default {@link TreeList}
+	 * 
+	 * @param <T> The type of element
+	 * @return The empty base of list
+	 */
+	public static <T> PList<T> emptyList() {
+		return TreeList.create();
 	}
 }
