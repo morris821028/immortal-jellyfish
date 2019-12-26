@@ -96,4 +96,18 @@ public class TreeListTest {
 
 		Assertions.assertEquals("{size=4, [3, ., 1, 4]}", a.toString());
 	}
+
+	@Test
+	public void testDemo() {
+		PList<Integer> a = TreeList.create();
+		for (int i = 0; i < 10; i++)
+					a = a.pushBack(null);
+		a = a.set(0, 1);
+		a = a.set(1, 1);
+		for (int i = 2; i < 10; i++)
+		  a = a.set(i, a.get(i - 1) + a.get(i - 2));
+		Assertions.assertEquals("{size=10, [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]}", a.toString());
+		a = a.popBack();
+		Assertions.assertEquals("{size=9, [1, 1, 2, 3, 5, 8, 13, 21, 34]}", a.toString());
+	}
 }
