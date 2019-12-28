@@ -29,7 +29,7 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 	private final PStack<T> r;
 	private final int hsize;
 
-	class Rot extends PStack<T> {
+	static class Rot<T> extends PStack<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;
@@ -80,7 +80,7 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 				return a;
 			}
 			PStack<T> t = PStack.of(r.top());
-			return new Rot(l.pop(), r.pop(), Append.create(t, a));
+			return new Rot<>(l.pop(), r.pop(), Append.create(t, a));
 		}
 	}
 
@@ -97,7 +97,7 @@ public final class PreEvalQueue<T> implements PQueue<T> {
 			this.hsize = hsize - 1;
 		} else {
 			this.r = PCollections.emptyStack();
-			this.l = new Rot(l, r);
+			this.l = new Rot<>(l, r);
 			this.hsize = this.l.size();
 		}
 	}

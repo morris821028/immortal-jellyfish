@@ -40,7 +40,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 	private final PStack<T> lHat;
 	private final PStack<T> rHat;
 
-	private class Rot1 extends PStack<T> {
+	private static class Rot1<T> extends PStack<T> {
 		private final int n;
 		private final PStack<T> l;
 		private final PStack<T> r;
@@ -85,7 +85,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 				return pop;
 			if (n >= C) {
 					assert !l.isEmpty();
-					pop = new Rot1(n - C, l.pop(), Drop.create(C, r));
+					pop = new Rot1<>(n - C, l.pop(), Drop.create(C, r));
 				assert pop.size() == this.size() - 1 : String.format("%d %b %s", l.size(), l.isEmpty(), pop.getClass());
 				return pop;
 			}
@@ -98,12 +98,12 @@ public class PreEvalDeque<T> implements PDeque<T> {
 			if (rx != null)
 				return rx;
 			assert n < C;
-			rx = new Rot2(l, Drop.create(n, r), PCollections.emptyStack());
+			rx = new Rot2<>(l, Drop.create(n, r), PCollections.emptyStack());
 			return rx;
 		}
 	}
 
-	private class Rot2 extends PStack<T> {
+	private static class Rot2<T> extends PStack<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;
@@ -146,7 +146,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 			if (pop != null)
 				return pop;
 			if (!l.isEmpty() && r.size() >= C) {
-				pop = new Rot2(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.create(C, r)), a));
+				pop = new Rot2<>(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.create(C, r)), a));
 				return pop;
 			}
 			pop = getReal().pop();
@@ -175,14 +175,14 @@ public class PreEvalDeque<T> implements PDeque<T> {
 		if (l.size() > C * r.size() + 1) {
 			int n = (l.size() + r.size()) / 2;
 			PStack<T> ll = Take.create(n, l);
-			PStack<T> rr = n == 0 ? Append.create(r, l) : new Rot1(n, r, l);
+			PStack<T> rr = n == 0 ? Append.create(r, l) : new Rot1<>(n, r, l);
 			this.l = ll;
 			this.r = rr;
 			this.lHat = ll;
 			this.rHat = rr;
 		} else if (r.size() > C * l.size() + 1) {
 			int n = (l.size() + r.size()) / 2;
-			PStack<T> ll = n == 0 ? Append.create(l, r) : new Rot1(n, l, r);
+			PStack<T> ll = n == 0 ? Append.create(l, r) : new Rot1<>(n, l, r);
 			PStack<T> rr = Take.create(n, r);
 			this.l = ll;
 			this.r = rr;
