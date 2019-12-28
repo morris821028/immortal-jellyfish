@@ -59,11 +59,15 @@ public class TreeList<T> extends PList<T> {
 	}
 
 	/**
-	 * Returns the element at the specified position in this list.
+	 * {@inheritDoc}
 	 * 
-	 * @param index index of the element to return
+	 * <p>
+	 * O(log n) time in tree-style List, and cost O(log n) space.
+	 * </p>
+	 * 
+	 * @param index {@inheritDoc}}
 	 *
-	 * @return the element at the specified position in this list
+	 * @return {@inheritDoc}}
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
 	@Override
@@ -73,33 +77,44 @@ public class TreeList<T> extends PList<T> {
 
 		PStack<Node<T>> u = rNodes;
 		int tail = size;
-		while (!u.isEmpty()) {
+		while (tail > 0) {
 			Node<T> v = u.top();
-				int b = v.size();
-				if (index >= tail - b)
-					return get(v, b - (tail - index));
-				u = u.pop();
-				tail -= b;
+			int b = tail & (-tail);
+			if (index >= tail - b)
+				return get(v, b >> 1, b - (tail - index));
+			tail = tail - b;
+			u = u.pop();
 		}
 		assert false;
 		return null;
 	}
 
-	private static <T> T get(Node<T> u, int index) {
-		assert u.size() > index;
-		while (u instanceof TreeNode) {
+	private static <T> T get(Node<T> u, int size, int index) {
+		while (size > 0) {
 			TreeNode<T> tn = (TreeNode<T>) u;
-			if (index < tn.lson.size()) {
+			if (index < size) {
 				u = tn.lson;
 			} else {
 				u = tn.rson;
-				index -= tn.lson.size();
+				index -= size;
 			}
+			size >>= 1;
 		}
 		assert index == 0;
 		return ((DataNode<T>) u).val;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * <p>
+	 * O(log n) time in tree-style List, and cost O(log n) space.
+	 * </p>
+	 * 
+	 * @param index {@inheritDoc}
+	 * @param value {@inheritDoc}
+	 * @throws IndexOutOfBoundsException {@inheritDoc}
+	 */
 	@Override
 	public PList<T> set(int index, T value) {
 		if (index < 0 || index >= size())
@@ -108,26 +123,45 @@ public class TreeList<T> extends PList<T> {
 		return new TreeList<>(setValue(rNodes, size(), index, value), size);
 	}
 
+	/**
+	 * Helper function: replaces the element at the tree stack.
+	 * 
+	 * @param <T>   the type of basic elements in list
+	 * @param u     tree node stack
+	 * @param size  tree size
+	 * @param index index of the element to replace
+	 * @param value element to be stored at the specified position
+	 * @return modified tree node stack
+	 */
 	private static <T> PStack<Node<T>> setValue(PStack<Node<T>> u, int size, int index, T value) {
 		Node<T> v = u.top();
-		int b = v.size();
+		int b = size & (-size);
 		if (index >= size - b)
-			return u.pop().push(setValue(v, b - (size - index), value));
+			return u.pop().push(setValue(v, b >> 1, b - (size - index), value));
 		return setValue(u.pop(), size - b, index, value).push(v);
 	}
 
-	private static <T> Node<T> setValue(Node<T> u, int index, T value) {
-		assert u.size() > index;
+	/**
+	 * Helper function: replaces the element in the tree.
+	 * 
+	 * @param <T>   the type of basic elements in tree
+	 * @param u     tree root
+	 * @param size  tree size
+	 * @param index index of the element to replace
+	 * @param value element to be stored at the specified position
+	 * @return modified tree root node
+	 */
+	private static <T> Node<T> setValue(Node<T> u, int size, int index, T value) {
 		if (u instanceof DataNode) {
 			assert index == 0;
 			return new DataNode<>(value);
 		}
 
 		TreeNode<T> tn = (TreeNode<T>) u;
-		if (index < tn.lson.size()) {
-			return new TreeNode<>(setValue(tn.lson, index, value), tn.rson);
+		if (index < size) {
+			return new TreeNode<>(setValue(tn.lson, size >> 1, index, value), tn.rson);
 		} else {
-			return new TreeNode<>(tn.lson, setValue(tn.rson, index - tn.lson.size, value));
+			return new TreeNode<>(tn.lson, setValue(tn.rson, size >> 1, index - size, value));
 		}
 	}
 
@@ -156,8 +190,8 @@ public class TreeList<T> extends PList<T> {
 			return create();
 
 		PStack<Node<T>> u = rNodes;
-		Node<T> r = u.top();
 		PStack<Node<T>> f = PCollections.emptyStack();
+		Node<T> r = u.top();
 		for (int i = 0; ((size >> i) & 1) == 0; i++) {
 			TreeNode<T> tn = (TreeNode<T>) r;
 			f = f.push(tn.lson);
@@ -165,42 +199,32 @@ public class TreeList<T> extends PList<T> {
 		}
 
 		PStack<Node<T>> v = u.pop();
-		if (v.isEmpty())
-			return new TreeList<>(f, size - 1);
-
 		return new TreeList<>(Append.create(f, v), size - 1);
 	}
 
-	private abstract static class Node<T> { // NOSONAR
-		protected final int size;
-
-		Node(int size) {
-			this.size = size;
-		}
-
-		final int size() {
-			return size;
-		}
+	private static interface Node<T> { // NOSONAR
 	}
 
-	private static final class TreeNode<T> extends Node<T> {
+	private static final class TreeNode<T> implements Node<T> {
 		private final Node<T> lson;
 		private final Node<T> rson;
 
 		TreeNode(Node<T> l, Node<T> r) {
-			super(l.size() + r.size());
-			lson = l;
-			rson = r;
-			assert (size & (-size)) == size;
+			this.lson = l;
+			this.rson = r;
 		}
 	}
 
-	private static final class DataNode<T> extends Node<T> {
+	private static final class DataNode<T> implements Node<T> {
 		private final T val;
 
 		DataNode(T val) {
-			super(1);
 			this.val = val;
+		}
+
+		@Override
+		public String toString() {
+			return val == null ? "null" : val.toString();
 		}
 	}
 }
