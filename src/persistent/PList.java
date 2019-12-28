@@ -44,6 +44,8 @@ public abstract class PList<T> implements Iterable<T> {
 	 * @param value element to be stored at the specified position
 	 * @return the new array contains current specified element and remaining
 	 *         elements.
+	 * @throws IndexOutOfBoundsException if the index is out of range
+	 *                                   (<tt>index &lt; 0 || index &gt;= size()</tt>)
 	 */
 	public abstract PList<T> set(int index, T value);
 
