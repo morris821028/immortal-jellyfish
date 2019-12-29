@@ -29,4 +29,9 @@ public class PreEvalDequeTest {
 	public void testDequeAsSliding() {
 		PDequeTestUtil.testDequeAsSliding(PreEvalDeque.create());
 	}
+	
+	@Test
+	public void testZigZag() {
+		PDequeTestUtil.testZigZag(PreEvalDeque.create());
+	}
 }

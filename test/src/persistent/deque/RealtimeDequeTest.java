@@ -29,4 +29,9 @@ public class RealtimeDequeTest {
 	public void testDequeAsSliding() {
 		PDequeTestUtil.testDequeAsSliding(RealtimeDeque.create());
 	}
+	
+	@Test
+	public void testZigZag() {
+		PDequeTestUtil.testZigZag(RealtimeDeque.create());
+	}
 }
