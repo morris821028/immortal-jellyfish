@@ -2,7 +2,6 @@ package persistent.deque;
 
 import persistent.PDeque;
 import persistent.PStack;
-import persistent.helper.Append;
 import persistent.helper.Take;
 import persistent.util.PCollections;
 
@@ -31,17 +30,6 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 	protected final PStack<T> rhs;
 
 	/**
-	 * During transferring, store extra elements for {@link #pushFront(Object)},
-	 * {@link #popFront()}, and {@link #front()}.
-	 */
-	protected final PStack<T> lhsExtra;
-	/**
-	 * During transferring, store extra elements for {@link #pushBack(Object)},
-	 * {@link #popBack()}, and {@link #back()}
-	 */
-	protected final PStack<T> rhsExtra;
-
-	/**
 	 * The small stack, is the smaller stack of two parts in begin. Then, present
 	 * the state of copy transferring.
 	 */
@@ -66,19 +54,28 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 	protected final int sCopied;
 
 	private RealtimeDeque() {
-		this(PCollections.emptyStack(), PCollections.emptyStack(), null, null, null, null, null, null, null, null, 0);
+		this(PCollections.emptyStack(), PCollections.emptyStack(), null, null, null, null, null, null, 0);
 	}
 
-	private RealtimeDeque(PStack<T> lhs, PStack<T> rhs, PStack<T> lhsExtra, PStack<T> rhsExtra, PStack<T> sFrom,
-			PStack<T> sAux, PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied) {
-		if (lhs.size() + rhs.size() > 4 && sNew == null
-				&& (lhs.size() > rhs.size() * 3 || lhs.size() * 3 < rhs.size())) {
-			// initiate the transfer process
+	private RealtimeDeque(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux, PStack<T> sNew,
+			PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied) {
+		if (lhs.size() + rhs.size() <= 4 || (lhs.size() <= rhs.size() * 3 && lhs.size() * 3 >= rhs.size())) {
 			this.lhs = lhs;
 			this.rhs = rhs;
 
-			this.lhsExtra = PCollections.emptyStack();
-			this.rhsExtra = PCollections.emptyStack();
+			this.sFrom = null;
+			this.sAux = null;
+			this.sNew = null;
+
+			this.bFrom = null;
+			this.bAux = null;
+			this.bNew = null;
+
+			this.sCopied = 0;
+		} else if (sNew == null) {
+			// initiate the transfer process
+			this.lhs = lhs;
+			this.rhs = rhs;
 
 			this.sAux = PCollections.emptyStack();
 			this.sNew = PCollections.emptyStack();
@@ -96,8 +93,6 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		} else {
 			this.lhs = lhs;
 			this.rhs = rhs;
-			this.lhsExtra = lhsExtra;
-			this.rhsExtra = rhsExtra;
 
 			this.sFrom = sFrom;
 			this.sAux = sAux;
@@ -118,18 +113,11 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 
 	@Override
 	public int size() {
-		int size = lhs.size() + rhs.size();
-		if (lhsExtra != null)
-			size += lhsExtra.size();
-		if (rhsExtra != null)
-			size += rhsExtra.size();
-		return size;
+		return lhs.size() + rhs.size();
 	}
 
 	@Override
 	public T front() {
-		if (lhsExtra != null && !lhsExtra.isEmpty())
-			return lhsExtra.top();
 		if (!lhs.isEmpty())
 			return lhs.top();
 		if (rhs.size() == 1)
@@ -144,8 +132,6 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 
 	@Override
 	public T back() {
-		if (rhsExtra != null && !rhsExtra.isEmpty())
-			return rhsExtra.top();
 		if (!rhs.isEmpty())
 			return rhs.top();
 		if (lhs.size() == 1)
@@ -168,27 +154,20 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		if (size < 4) {
 			assert !isTransferring();
 			if (size == 3) {
-				PDeque<T> tmp = this;
+				T[] buf = flattenDeque();
 				T w = value;
-				T x = tmp.front();
-				tmp = tmp.popFront();
-				T y = tmp.front();
-				tmp = tmp.popFront();
-				T z = tmp.front();
+				T x = buf[0];
+				T y = buf[1];
+				T z = buf[2];
 				// [w, x, y, z] => [w, x] [y, z]
 				PStack<T> s = PStack.of(x, w);
 				PStack<T> b = PStack.of(y, z);
-				return new RealtimeDeque<>(s, b, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+				return new RealtimeDeque<>(s, b, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 			} else {
-				return new RealtimeDeque<>(lhs.push(value), rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux,
-						bNew, sCopied);
+				return new RealtimeDeque<>(lhs.push(value), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 			}
-		} else if (!isTransferring()) {
-			return create(lhs.push(value), rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied
-					);
 		} else {
-			return create(lhs, rhs, lhsExtra.push(value), rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied
-					);
+			return create(lhs.push(value), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		}
 	}
 
@@ -198,25 +177,20 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		if (size < 4) {
 			assert !isTransferring();
 			if (size == 3) {
-				RealtimeDeque<T> tmp = this;
-				T w = tmp.front();
-				tmp = tmp.popFront();
-				T x = tmp.front();
-				tmp = tmp.popFront();
-				T y = tmp.front();
+				T[] buf = flattenDeque();
+				T w = buf[0];
+				T x = buf[1];
+				T y = buf[2];
 				T z = value;
 				// [w, x, y, z] => [w, x] [y, z]
 				PStack<T> s = PStack.of(x, w);
 				PStack<T> b = PStack.of(y, z);
-				return new RealtimeDeque<>(s, b, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+				return new RealtimeDeque<>(s, b, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 			} else {
-				return new RealtimeDeque<>(lhs, rhs.push(value), lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux,
-						bNew, sCopied);
+				return new RealtimeDeque<>(lhs, rhs.push(value), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 			}
-		} else if (!isTransferring()) {
-			return create(lhs, rhs.push(value), lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		} else {
-			return create(lhs, rhs, lhsExtra, rhsExtra.push(value), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return create(lhs, rhs.push(value), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		}
 	}
 
@@ -238,14 +212,9 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				else
 					nr = nr.push(val);
 			}
-			return create(nl, nr, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-		} else if (!isTransferring()) {
-			return create(lhs.pop(), rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return create(nl, nr, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		} else {
-			if (!lhsExtra.isEmpty())
-				return create(lhs, rhs, lhsExtra.pop(), rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-			else
-				return create(lhs.pop(), rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return create(lhs.pop(), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		}
 	}
 
@@ -267,14 +236,9 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				else
 					nr = nr.push(val);
 			}
-			return create(nl, nr, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-		} else if (!isTransferring()) {
-			return create(lhs, rhs.pop(), lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return create(nl, nr, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		} else {
-			if (!lhsExtra.isEmpty())
-				return create(lhs, rhs, lhsExtra, rhsExtra.pop(), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-			else
-				return create(lhs, rhs.pop(), lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return create(lhs, rhs.pop(), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		}
 	}
 
@@ -305,15 +269,12 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 	 * @return An adjusted deque by exact 2 steps. If remaining steps is not enough,
 	 *         return the last state.
 	 */
-	private static <T> RealtimeDeque<T> step(final RealtimeDeque<T> q) {
+	private static <T> RealtimeDeque<T> step(final RealtimeDeque<T> q, int cost) {
 		if (!q.isTransferring())
 			return q;
 
 		PStack<T> lhs = q.lhs;
 		PStack<T> rhs = q.rhs;
-
-		PStack<T> lhsExtra = q.lhsExtra;
-		PStack<T> rhsExtra = q.rhsExtra;
 
 		PStack<T> sFrom = q.sFrom;
 		PStack<T> sAux = q.sAux;
@@ -324,10 +285,7 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		PStack<T> bNew = q.bNew;
 
 		int sCopied = q.sCopied;
-		boolean sb = lhs.size() < rhs.size();
 		int tMove = sFrom != null ? bAux.size() + bFrom.size() - sAux.size() - sFrom.size() - 1 : 0;
-
-		int cost = 2;
 
 		while (bAux.size() < tMove && cost > 0) {
 			bAux = bAux.push(bFrom.top());
@@ -342,10 +300,11 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 		}
 
 		if (cost == 0)
-			return new RealtimeDeque<>(lhs, rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return new RealtimeDeque<>(lhs, rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 
 		sFrom = null;
 
+		boolean sb = lhs.size() < rhs.size();
 		while (cost > 0) {
 			cost--;
 			if (!bAux.isEmpty()) {
@@ -369,14 +328,12 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 			if (sCopied == targetSize) {
 				int m = (sNew.size() + sAux.size()) / 2;
 				if (sb) {
-					lhs = Append.create(lhsExtra, sNew);
-					rhs = Append.create(rhsExtra, Take.create(rhs.size() - m - 1, rhs));
+					lhs = sNew;
+					rhs = Take.create(rhs.size() - m - 1, rhs);
 				} else {
-					lhs = Append.create(lhsExtra, Take.create(lhs.size() - m - 1, lhs));
-					rhs = Append.create(rhsExtra, sNew);
+					lhs = Take.create(lhs.size() - m - 1, lhs);
+					rhs = sNew;
 				}
-
-				lhsExtra = rhsExtra = null;
 
 				sFrom = sAux = sNew = null;
 
@@ -386,24 +343,20 @@ public final class RealtimeDeque<T> implements PDeque<T> {
 				break;
 			}
 		}
-		return new RealtimeDeque<>(lhs, rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+		return new RealtimeDeque<>(lhs, rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 	}
 
-	private static <T> RealtimeDeque<T> create(PStack<T> lhs, PStack<T> rhs, PStack<T> lhsExtra, PStack<T> rhsExtra,
-			PStack<T> sFrom, PStack<T> sAux, PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew,
-			int sCopied) {
+	private static <T> RealtimeDeque<T> create(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux,
+			PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied) {
 		boolean init = sAux == null;
-		RealtimeDeque<T> ret = new RealtimeDeque<>(lhs, rhs, lhsExtra, rhsExtra, sFrom, sAux, sNew, bFrom, bAux, bNew,
-				sCopied);
+		RealtimeDeque<T> ret = new RealtimeDeque<>(lhs, rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		if (init && ret.isTransferring()) {
 			// allocate 6 steps, which violates the invariant
-			ret = step(ret);
-			ret = step(ret);
-			ret = step(ret);
+			// 4 steps to each operations
+			ret = step(ret, 10);
+		} else {
+			ret = step(ret, 4);
 		}
-		// 4 steps to each operations
-		ret = step(ret);
-		ret = step(ret);
 		return ret;
 	}
 }
