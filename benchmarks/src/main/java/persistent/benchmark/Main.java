@@ -14,9 +14,9 @@ public class Main {
 		Options options = new OptionsBuilder().include(QueueBenchmark.class.getSimpleName())
 				.warmupTime(TimeValue.milliseconds(100)) //
 				.measurementTime(TimeValue.seconds(1)) //
-				.result("result.json") //
+				//.result("result.json") //
 				.resultFormat(ResultFormatType.JSON) //
-				// .addProfiler(GCProfiler.class) // garbage collection profiler
+				//.addProfiler(GCProfiler.class) // garbage collection profiler
 				.forks(1).build();
 		try {
 			new Runner(options).run();
