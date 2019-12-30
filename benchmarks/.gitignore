@@ -1,1 +1,4 @@
 /target/
+
+# JMH output .json
+*.json
