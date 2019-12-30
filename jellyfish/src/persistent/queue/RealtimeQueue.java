@@ -129,16 +129,10 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 			if (!headReverseFrom.isEmpty()) {
 				headReverseTo = headReverseTo.push(headReverseFrom.top());
 				headReverseFrom = headReverseFrom.pop();
-				continue;
-			}
-
-			if (!tailReverseFrom.isEmpty()) {
+			} else if (!tailReverseFrom.isEmpty()) {
 				tailReverseTo = tailReverseTo.push(tailReverseFrom.top());
 				tailReverseFrom = tailReverseFrom.pop();
-				continue;
-			}
-
-			if (tailReverseFrom.isEmpty()) {
+			} else if (tailReverseFrom.isEmpty()) {
 				if (!headReverseTo.isEmpty() && headCopied < head.size()) {
 					headCopied++;
 					tailReverseTo = tailReverseTo.push(headReverseTo.top());
