@@ -88,12 +88,12 @@ public class PathBenchmark {
 	}
 
 	@Benchmark
-	public void testDeepMutablePath64() {
-		getAllDeepPathsByMutable(64);
+	public void testDeepMutablePath32() {
+		getAllDeepPathsByMutable(32);
 	}
 
 	@Benchmark
-	public void testDeepImmutablePath64() {
-		getAllDeepPathsByImmutable(8);
+	public void testDeepImmutablePath32() {
+		getAllDeepPathsByImmutable(32);
 	}
 }
