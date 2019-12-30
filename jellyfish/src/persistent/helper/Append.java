@@ -6,6 +6,7 @@ import persistent.stack.PersistStack;
 public class Append<T> extends PStack<T> {
 	private final PStack<T> l;
 	private final PStack<T> r;
+	private final T top;
 	private final int size;
 	
 	private Append(PStack<T> l, PStack<T> r) {
@@ -13,6 +14,7 @@ public class Append<T> extends PStack<T> {
 		this.l = l;
 		this.r = r;
 		this.size = l.size() + r.size();
+		this.top = l.top();
 	}
 
 	@Override
@@ -27,7 +29,7 @@ public class Append<T> extends PStack<T> {
 
 	@Override
 	public T top() {
-		return l.top();
+		return top;
 	}
 
 	@Override
