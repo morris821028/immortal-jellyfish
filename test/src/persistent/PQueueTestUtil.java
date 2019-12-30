@@ -62,6 +62,5 @@ public class PQueueTestUtil {
 			Assertions.assertEquals(n - i - 1, que.size());
 		}
 		System.out.println("testQueue() pass");
-		testQueueAsSliding(empty);
 	}
 }
