@@ -16,7 +16,7 @@ import persistent.util.PCollections;
  *
  * @param <T> The type of element
  */
-public final class PreEvalQueue<T> implements PQueue<T> {
+public final class PreEvalQueue<T> extends PQueue<T> {
 	@SuppressWarnings("rawtypes")
 	private static final PreEvalQueue<?> EMPTY = new PreEvalQueue();
 

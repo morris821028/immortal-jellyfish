@@ -11,7 +11,7 @@ import persistent.util.PCollections;
  *
  * @param <T> The type of element
  */
-public final class RealtimeQueue<T> implements PQueue<T> {
+public final class RealtimeQueue<T> extends PQueue<T> {
 	@SuppressWarnings("rawtypes")
 	private static final RealtimeQueue<?> EMPTY = new RealtimeQueue();
 

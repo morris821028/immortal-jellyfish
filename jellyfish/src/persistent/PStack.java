@@ -32,10 +32,10 @@ public abstract class PStack<T> implements Iterable<T> {
 	 */
 	@Override
 	public Iterator<T> iterator() {
-		return new StackIterator(this);
+		return new StackIterator<>(this);
 	}
 
-	class StackIterator implements Iterator<T> {
+	static class StackIterator<T> implements Iterator<T> {
 		private PStack<T> current;
 
 		public StackIterator(PStack<T> topmost) {
