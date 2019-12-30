@@ -5,7 +5,8 @@ import persistent.PStack;
 import persistent.util.PCollections;
 
 /**
- * Paper: "Real Time Queue Operations in Pure LISP", Hood, Robert T. & Melville, Robert C.
+ * Paper: "Real Time Queue Operations in Pure LISP", Hood, Robert T. & Melville,
+ * Robert C.
  * 
  * @author morrisy
  *
@@ -33,9 +34,8 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 		this(PCollections.emptyStack(), PCollections.emptyStack(), null, null, null, null, 0);
 	}
 
-	private RealtimeQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
-			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo,
-			int headCopied) {
+	private RealtimeQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom, PStack<T> tailReverseTo,
+			PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
 		this.headCopied = headCopied;
 		if (tail.size() <= head.size()) {
 			this.head = head;
@@ -93,14 +93,13 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 
 	@Override
 	public PQueue<T> push(T value) {
-		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom,
-				headReverseTo, headCopied);
+		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+				headCopied);
 	}
 
 	@Override
 	public PQueue<T> pop() {
-		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom,
-				headReverseTo, headCopied);
+		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied);
 	}
 
 	/**
@@ -111,9 +110,9 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 	}
 
 	/**
-	 * Perform 5 incremental steps
+	 * Perform incremental steps
 	 */
-	private static <T> RealtimeQueue<T> step(final RealtimeQueue<T> q) {
+	private static <T> RealtimeQueue<T> step(final RealtimeQueue<T> q, int cost) {
 		if (!needsStep(q))
 			return q;
 
@@ -125,52 +124,52 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 		PStack<T> headReverseTo = q.headReverseTo;
 		int headCopied = q.headCopied;
 
-		if (!headReverseFrom.isEmpty()) {
-			headReverseTo = headReverseTo.push(headReverseFrom.top());
-			headReverseFrom = headReverseFrom.pop();
+		while (cost > 0) {
+			cost--;
 			if (!headReverseFrom.isEmpty()) {
 				headReverseTo = headReverseTo.push(headReverseFrom.top());
 				headReverseFrom = headReverseFrom.pop();
+				continue;
 			}
-		}
 
-		if (!tailReverseFrom.isEmpty()) {
-			tailReverseTo = tailReverseTo.push(tailReverseFrom.top());
-			tailReverseFrom = tailReverseFrom.pop();
 			if (!tailReverseFrom.isEmpty()) {
 				tailReverseTo = tailReverseTo.push(tailReverseFrom.top());
 				tailReverseFrom = tailReverseFrom.pop();
-			}
-		}
-
-		if (tailReverseFrom.isEmpty()) {
-			if (!headReverseTo.isEmpty() && headCopied < head.size()) {
-				headCopied++;
-				tailReverseTo = tailReverseTo.push(headReverseTo.top());
-				headReverseTo = headReverseTo.pop();
+				continue;
 			}
 
-			if (headCopied == head.size()) {
-				head = tailReverseTo;
-				tailReverseFrom = null;
-				tailReverseTo = null;
-				headReverseFrom = null;
-				headReverseTo = null;
-				headCopied = 0;
+			if (tailReverseFrom.isEmpty()) {
+				if (!headReverseTo.isEmpty() && headCopied < head.size()) {
+					headCopied++;
+					tailReverseTo = tailReverseTo.push(headReverseTo.top());
+					headReverseTo = headReverseTo.pop();
+				}
+
+				if (headCopied == head.size()) {
+					head = tailReverseTo;
+					tailReverseFrom = null;
+					tailReverseTo = null;
+					headReverseFrom = null;
+					headReverseTo = null;
+					headCopied = 0;
+					break;
+				}
 			}
 		}
-		return new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
-				headReverseTo, headCopied);
+		return new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+				headCopied);
 	}
 
 	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
-			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo,
-			int headCopied) {
-		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo,
-				headReverseFrom, headReverseTo, headCopied);
-
-		ret = step(ret);
-		ret = step(ret);
+			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
+		boolean init = tailReverseFrom == null;
+		RealtimeQueue<T> ret = new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom,
+				headReverseTo, headCopied);
+		if (init && needsStep(ret)) {
+			ret = step(ret, 4);
+		} else {
+			ret = step(ret, 3);
+		}
 		return ret;
 	}
 }
