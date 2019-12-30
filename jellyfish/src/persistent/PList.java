@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import persistent.array.TreeList;
-import persistent.queue.RealtimeQueue;
 
 /**
  * Work like {@literal C++ std::vector}
@@ -122,7 +121,6 @@ public abstract class PList<T> implements Iterable<T> {
 	}
 
 	public static <T> PList<T> of(T value) {
-		PList<T> list = TreeList.create();
-		return list.pushBack(value);
+		return TreeList.<T>create().pushBack(value);
 	}
 }

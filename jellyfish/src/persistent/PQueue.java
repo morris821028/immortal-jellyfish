@@ -3,7 +3,6 @@ package persistent;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import persistent.PStack.StackIterator;
 import persistent.queue.RealtimeQueue;
 
 public abstract class PQueue<T> implements Iterable<T> {
@@ -50,7 +49,6 @@ public abstract class PQueue<T> implements Iterable<T> {
 	}
 
 	public static <T> PQueue<T> of(T value) {
-		PQueue<T> que = RealtimeQueue.create();
-		return que.push(value);
+		return RealtimeQueue.<T>create().push(value);
 	}
 }
