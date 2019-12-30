@@ -6,7 +6,8 @@ import persistent.helper.Append;
 import persistent.util.PCollections;
 
 /**
- * Paper: "Simple and efficient purely functional queues and deques", Chris Okasaki
+ * Paper: "Simple and efficient purely functional queues and deques", Chris
+ * Okasaki
  *
  * <p>
  * Invariants: {@literal |R| <= |L| and |^L| = |L| - |R|}
@@ -70,8 +71,7 @@ public final class PreEvalQueue<T> extends PQueue<T> {
 
 		@Override
 		public PStack<T> push(T value) {
-			PStack<T> t = PStack.of(value);
-			return Append.create(t, this);
+			return Append.create(PStack.<T>of(value), this);
 		}
 
 		@Override
@@ -79,8 +79,7 @@ public final class PreEvalQueue<T> extends PQueue<T> {
 			if (r.size() == 1) {
 				return a;
 			}
-			PStack<T> t = PStack.of(r.top());
-			return new Rot<>(l.pop(), r.pop(), Append.create(t, a));
+			return new Rot<>(l.pop(), r.pop(), Append.create(PStack.<T>of(r.top()), a));
 		}
 	}
 
