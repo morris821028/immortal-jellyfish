@@ -10,6 +10,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
@@ -23,6 +24,9 @@ import persistent.example.lib.MutablePath;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 public class PathBenchmark {
+	@Param({ "1", "2", "4", "8", "16" })
+	int fullSize;
+
 	private static void computePathsByImmutable(ImmutablePath parentPath, List<ImmutablePath> paths, int dep) {
 		paths.add(parentPath);
 		if (dep > 0) {
@@ -55,45 +59,13 @@ public class PathBenchmark {
 		return ret;
 	}
 
-	public static List<ImmutablePath> getAllDeepPathsByImmutable(int dep) {
-		List<ImmutablePath> ret = new ArrayList<>();
-		ret.add(new ImmutablePath());
-		for (int i = 0; i < dep; i++) {
-			ImmutablePath p = ret.get(ret.size() - 1);
-			ret.add(p.add("0"));
-			ret.add(p.add("1"));
-		}
-		return ret;
-	}
-
-	public static List<MutablePath> getAllDeepPathsByMutable(int dep) {
-		List<MutablePath> ret = new ArrayList<>();
-		ret.add(new MutablePath());
-		for (int i = 0; i < dep; i++) {
-			MutablePath p = ret.get(ret.size() - 1);
-			ret.add(new MutablePath(p, "0"));
-			ret.add(new MutablePath(p, "1"));
-		}
-		return ret;
+	@Benchmark
+	public void testMutablePath() {
+		getAllPathsByMutable(fullSize);
 	}
 
 	@Benchmark
-	public void testMutablePath8() {
-		getAllPathsByMutable(8);
-	}
-
-	@Benchmark
-	public void testImmutablePath8() {
-		getAllPathsByImmutable(8);
-	}
-
-	@Benchmark
-	public void testDeepMutablePath32() {
-		getAllDeepPathsByMutable(32);
-	}
-
-	@Benchmark
-	public void testDeepImmutablePath32() {
-		getAllDeepPathsByImmutable(32);
+	public void testImmutablePath() {
+		getAllPathsByImmutable(fullSize);
 	}
 }

@@ -86,7 +86,8 @@ public class PathDemo {
 		b.clear();
 
 		Options options = new OptionsBuilder().include(PathBenchmark.class.getSimpleName())
-				.warmupTime(TimeValue.seconds(1)).measurementTime(TimeValue.seconds(1)).forks(1).build();
+				.include(PathDeepBenchmark.class.getSimpleName()).warmupTime(TimeValue.milliseconds(100))
+				.measurementTime(TimeValue.seconds(1)).forks(1).build();
 		try {
 			new Runner(options).run();
 		} catch (RunnerException e) {
