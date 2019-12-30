@@ -3,6 +3,12 @@ package persistent.example;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
+
 import persistent.example.lib.ImmutablePath;
 import persistent.example.lib.MutablePath;
 
@@ -64,14 +70,6 @@ public class PathDemo {
 		return ret;
 	}
 
-	private static void measure(Runnable r) {
-		System.gc();
-		long start = System.nanoTime();
-		r.run();
-		long time = System.nanoTime() - start;
-		System.out.printf("Time: %f\n\n", time / 10e+9);
-	}
-
 	public static void main(String[] args) {
 		List<ImmutablePath> a = getAllPathsByImmutable(3);
 		List<MutablePath> b = getAllPathsByMutable(3);
@@ -87,24 +85,12 @@ public class PathDemo {
 		a.clear();
 		b.clear();
 
-		// no advantage by immutable in short size
-		measure(() -> {
-			for (int i = 0; i < 64; i++)
-				getAllPathsByMutable(8);
-		});
-		measure(() -> {
-			for (int i = 0; i < 64; i++)
-				getAllPathsByImmutable(8);
-		});
-
-		// has advantage in bigger size
-		measure(() -> {
-			for (int i = 0; i < 64; i++)
-				getAllDeepPathsByMutable(64);
-		});
-		measure(() -> {
-			for (int i = 0; i < 64; i++)
-				getAllDeepPathsByImmutable(64);
-		});
+		Options options = new OptionsBuilder().include(PathBenchmark.class.getSimpleName())
+				.warmupTime(TimeValue.seconds(1)).measurementTime(TimeValue.seconds(1)).forks(1).build();
+		try {
+			new Runner(options).run();
+		} catch (RunnerException e) {
+			e.printStackTrace();
+		}
 	}
 }
