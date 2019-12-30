@@ -1,7 +1,6 @@
 package persistent.example.lib;
 
 import persistent.PList;
-import persistent.PQueue;
 import persistent.util.PCollections;
 
 public class ImmutablePath {
