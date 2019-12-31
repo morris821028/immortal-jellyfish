@@ -4,7 +4,6 @@ import java.util.NoSuchElementException;
 
 import persistent.PList;
 import persistent.PStack;
-import persistent.helper.Append;
 import persistent.util.PCollections;
 
 /**
