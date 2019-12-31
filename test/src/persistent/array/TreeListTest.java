@@ -102,13 +102,34 @@ public class TreeListTest {
 	public void testDemo() {
 		PList<Integer> a = PCollections.emptyList();
 		for (int i = 0; i < 10; i++)
-					a = a.pushBack(null);
+			a = a.pushBack(null);
 		a = a.set(0, 1);
 		a = a.set(1, 1);
 		for (int i = 2; i < 10; i++)
-		  a = a.set(i, a.get(i - 1) + a.get(i - 2));
+			a = a.set(i, a.get(i - 1) + a.get(i - 2));
 		Assertions.assertEquals("{size=10, [1, 1, 2, 3, 5, 8, 13, 21, 34, 55]}", a.toString());
 		a = a.popBack();
 		Assertions.assertEquals("{size=9, [1, 1, 2, 3, 5, 8, 13, 21, 34]}", a.toString());
+	}
+
+	@Test
+	public void testZigZag() {
+		PList<Integer> a = TreeList.create();
+		a = a.pushBack(0);
+		a = a.pushBack(1);
+		for (int i = 0; i < 200000; i++) {
+			for (int j = 2; j < 32; j++)
+				a = a.pushBack(j);
+			for (int j = 2; j < 32; j++)
+				a = a.popBack();
+		}
+		Assertions.assertEquals(a.size(), 2);
+		for (int i = 0; i < 1000000; i++) {
+			Assertions.assertNotNull(a.popBack());
+		}
+		for (int i = 0; i < 1000000; i++) {
+			Assertions.assertEquals(a.get(0), 0);
+			Assertions.assertEquals(a.get(1), 1);
+		}
 	}
 }

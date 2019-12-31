@@ -189,17 +189,15 @@ public class TreeList<T> extends PList<T> {
 		if (size == 1)
 			return create();
 
-		PStack<Node<T>> u = rNodes;
-		PStack<Node<T>> f = PCollections.emptyStack();
-		Node<T> r = u.top();
+		PStack<Node<T>> v = rNodes.pop();
+		Node<T> r = rNodes.top();
 		for (int i = 0; ((size >> i) & 1) == 0; i++) {
 			TreeNode<T> tn = (TreeNode<T>) r;
-			f = f.push(tn.lson);
+			v = v.push(tn.lson);
 			r = tn.rson;
 		}
 
-		PStack<Node<T>> v = u.pop();
-		return new TreeList<>(Append.create(f, v), size - 1);
+		return new TreeList<>(v, size - 1);
 	}
 
 	private static interface Node<T> { // NOSONAR
