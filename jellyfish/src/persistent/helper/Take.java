@@ -2,16 +2,18 @@ package persistent.helper;
 
 import persistent.PStack;
 import persistent.stack.PersistStack;
+import persistent.util.PCollections;
 
 public class Take<T> extends PStack<T> {
 	private final PStack<T> x;
 	private final int n;
-
-	private PStack<T> pop;
+	private final T top;
 
 	private Take(int n, PStack<T> x) {
 		this.n = n;
 		this.x = x;
+		this.top = x.top();
+		assert !(x instanceof Take);
 	}
 
 	@Override
@@ -26,7 +28,7 @@ public class Take<T> extends PStack<T> {
 
 	@Override
 	public T top() {
-		return x.top();
+		return top;
 	}
 
 	@Override
@@ -36,20 +38,20 @@ public class Take<T> extends PStack<T> {
 
 	@Override
 	public PStack<T> pop() {
-		if (pop != null)
-			return pop;
-		if (n == 1)
-			return pop = PersistStack.create();
-		pop = create(n - 1, x.pop());
-		return pop;
+		return create(n - 1, x.pop());
 	}
 
 	public static <T> PStack<T> create(int n, PStack<T> x) {
 		if (n == 0)
-			return PersistStack.create();
+			return PCollections.emptyStack();
 		if (x instanceof Drop<?>) {
 			Drop<T> t = (Drop<T>) x;
 			x = t.getReal();
+		}
+		if (x instanceof Take<?>) {
+			Take<T> t = (Take<T>) x;
+			assert n <= t.n;
+			return new Take<>(n, t.x);
 		}
 		return new Take<>(n, x);
 	}
