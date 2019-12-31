@@ -1,7 +1,7 @@
 package persistent.helper;
 
 import persistent.PStack;
-import persistent.stack.PersistStack;
+import persistent.util.PCollections;
 
 public class Drop<T> extends PStack<T> {
 	private final PStack<T> x;
@@ -68,7 +68,7 @@ public class Drop<T> extends PStack<T> {
 		if (n == 0)
 			return x;
 		if (n >= x.size())
-			return PersistStack.create();
+			return PCollections.emptyStack();
 		return new Drop<>(n, x);
 	}
 }
