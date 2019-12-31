@@ -37,29 +37,28 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 	private final PStack<T> l;
 	private final PStack<T> r;
-	private final PStack<T> lHat;
-	private final PStack<T> rHat;
 
 	private static class Rot1<T> extends PStack<T> {
 		private final int n;
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final int size;
-
-		private PStack<T> rx;
-		private PStack<T> pop;
+		private final T top;
 
 		public Rot1(int n, PStack<T> l, PStack<T> r) {
 			this.n = n;
 			this.l = l;
 			this.r = r;
 			this.size = l.size() + r.size() - n;
+			this.top = l.top();
 			assert this.n >= 0 && this.n < r.size();
+			assert !l.isEmpty();
+			assert n >= C;
 		}
 
 		@Override
 		public boolean isEmpty() {
-			return size() == 0;
+			return false;
 		}
 
 		@Override
@@ -69,9 +68,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 		@Override
 		public T top() {
-			if (!l.isEmpty())
-				return l.top();
-			return getReal().top();
+			return top;
 		}
 
 		@Override
@@ -81,25 +78,15 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 		@Override
 		public PStack<T> pop() {
-			if (pop != null)
-				return pop;
-			if (n >= C) {
-					assert !l.isEmpty();
-					pop = new Rot1<>(n - C, l.pop(), Drop.create(C, r));
-				assert pop.size() == this.size() - 1 : String.format("%d %b %s", l.size(), l.isEmpty(), pop.getClass());
-				return pop;
-			}
-			pop = getReal().pop();
-			assert pop.size() == this.size() - 1;
-			return pop;
+			if (size == 1)
+				return PCollections.emptyStack();
+			return Rot1.create(n - C, l.pop(), Drop.create(C, r));
 		}
 
-		private PStack<T> getReal() {
-			if (rx != null)
-				return rx;
-			assert n < C;
-			rx = new Rot2<>(l, Drop.create(n, r), PCollections.emptyStack());
-			return rx;
+		private static <T> PStack<T> create(int n, PStack<T> l, PStack<T> r) {
+			if (n >= C)
+				return new Rot1<>(n, l, r);
+			return Rot2.create(l, Drop.create(n, r), PCollections.emptyStack());
 		}
 	}
 
@@ -107,33 +94,31 @@ public class PreEvalDeque<T> implements PDeque<T> {
 		private final PStack<T> l;
 		private final PStack<T> r;
 		private final PStack<T> a;
-
-		private PStack<T> rx;
-		private PStack<T> pop;
+		private final int size;
+		private final T top;
 
 		public Rot2(PStack<T> l, PStack<T> r, PStack<T> a) {
 			this.l = l;
 			this.r = r;
 			this.a = a;
+			this.size = l.size() + r.size() + a.size();
+			this.top = l.top();
+			assert this.size > 0;
 		}
 
 		@Override
 		public boolean isEmpty() {
-			return size() == 0;
+			return false;
 		}
 
 		@Override
 		public int size() {
-			return l.size() + r.size() + a.size();
+			return size;
 		}
 
 		@Override
 		public T top() {
-			if (!l.isEmpty())
-				return l.top();
-			T v = getReal().top();
-			assert v != null : String.format("%d %s %b", getReal().size(), getReal().getClass(), isEmpty());
-			return v;
+			return top;
 		}
 
 		@Override
@@ -143,56 +128,39 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 		@Override
 		public PStack<T> pop() {
-			if (pop != null)
-				return pop;
-			if (!l.isEmpty() && r.size() >= C) {
-				pop = new Rot2<>(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.create(C, r)), a));
-				return pop;
-			}
-			pop = getReal().pop();
-			assert pop.size() == this.size() - 1;
-			return pop;
+			if (size == 1)
+				return PCollections.emptyStack();
+			return create(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.create(C, r)), a));
 		}
 
-		private PStack<T> getReal() {
-			if (rx != null)
-				return rx;
-			assert l.size() == 0 || r.size() < C;
-			rx = Append.create(Append.create(l, Rev.create(r)), a);
-			assert rx.size() == this.size();
-			return rx;
+		private static <T> PStack<T> create(PStack<T> l, PStack<T> r, PStack<T> a) {
+			if (!l.isEmpty() && r.size() >= C)
+				return new Rot2<>(l, r, a);
+			return Append.create(l, Append.create(Rev.reverse(r), a));
 		}
 	}
 
 	private PreEvalDeque() {
-		l = PCollections.emptyStack();
-		r = l;
-		lHat = l;
-		rHat = l;
+		this.l = PCollections.emptyStack();
+		this.r = l;
 	}
 
-	private PreEvalDeque(PStack<T> l, PStack<T> r, PStack<T> lHat, PStack<T> rHat) {
+	private PreEvalDeque(PStack<T> l, PStack<T> r) {
 		if (l.size() > C * r.size() + 1) {
 			int n = (l.size() + r.size()) / 2;
 			PStack<T> ll = Take.create(n, l);
-			PStack<T> rr = n == 0 ? Append.create(r, l) : new Rot1<>(n, r, l);
+			PStack<T> rr = n == 0 ? Append.create(r, l) : Rot1.create(n, r, l);
 			this.l = ll;
 			this.r = rr;
-			this.lHat = ll;
-			this.rHat = rr;
 		} else if (r.size() > C * l.size() + 1) {
 			int n = (l.size() + r.size()) / 2;
-			PStack<T> ll = n == 0 ? Append.create(l, r) : new Rot1<>(n, l, r);
+			PStack<T> ll = n == 0 ? Append.create(l, r) : Rot1.create(n, l, r);
 			PStack<T> rr = Take.create(n, r);
 			this.l = ll;
 			this.r = rr;
-			this.lHat = ll;
-			this.rHat = rr;
 		} else {
 			this.l = l;
 			this.r = r;
-			this.lHat = lHat;
-			this.rHat = rHat;
 		}
 	}
 
@@ -222,18 +190,18 @@ public class PreEvalDeque<T> implements PDeque<T> {
 
 	@Override
 	public PDeque<T> pushFront(T value) {
-		return new PreEvalDeque<>(l.push(value), r, lHat.pop(), rHat.pop());
+		return new PreEvalDeque<>(l.push(value), r);
 	}
 
 	@Override
 	public PDeque<T> pushBack(T value) {
-		return new PreEvalDeque<>(l, r.push(value), lHat.pop(), rHat.pop());
+		return new PreEvalDeque<>(l, r.push(value));
 	}
 
 	@Override
 	public PDeque<T> popFront() {
 		if (!l.isEmpty())
-			return new PreEvalDeque<>(l.pop(), r, lHat.pop().pop(), rHat.pop().pop());
+			return new PreEvalDeque<>(l.pop(), r);
 		assert r.size() == 1 : r.size();
 		return create();
 	}
@@ -241,7 +209,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 	@Override
 	public PDeque<T> popBack() {
 		if (!r.isEmpty())
-			return new PreEvalDeque<>(l, r.pop(), lHat.pop().pop(), rHat.pop().pop());
+			return new PreEvalDeque<>(l, r.pop());
 		assert l.size() == 1;
 		return create();
 	}
