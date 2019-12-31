@@ -8,13 +8,17 @@ public class Append<T> extends PStack<T> {
 	private final PStack<T> r;
 	private final T top;
 	private final int size;
-	
+
 	private Append(PStack<T> l, PStack<T> r) {
+		this(l, r, l.top(), l.size() + r.size());
+	}
+
+	private Append(PStack<T> l, PStack<T> r, T top, int size) {
 		assert !l.isEmpty();
 		this.l = l;
 		this.r = r;
-		this.size = l.size() + r.size();
-		this.top = l.top();
+		this.size = size;
+		this.top = top;
 	}
 
 	@Override
@@ -34,7 +38,7 @@ public class Append<T> extends PStack<T> {
 
 	@Override
 	public PStack<T> push(T value) {
-		return new Append<>(l.push(value), r);
+		return new Append<>(l.push(value), r, value, size + 1);
 	}
 
 	@Override
@@ -65,6 +69,6 @@ public class Append<T> extends PStack<T> {
 		if (r.isEmpty()) {
 			return t;
 		}
-		return new Append<>(t, r);
+		return new Append<>(t, r, l, r.size() + 1);
 	}
 }
