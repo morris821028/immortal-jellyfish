@@ -136,7 +136,7 @@ public class PreEvalDeque<T> implements PDeque<T> {
 		private static <T> PStack<T> create(PStack<T> l, PStack<T> r, PStack<T> a) {
 			if (!l.isEmpty() && r.size() >= C)
 				return new Rot2<>(l, r, a);
-			return Append.create(l, Append.create(Rev.reverse(r), a));
+			return Append.create(l, Append.create(Rev.create(r), a));
 		}
 	}
 
