@@ -49,6 +49,10 @@ public class Append<T> extends PStack<T> {
 			return r;
 		if (r.isEmpty())
 			return l;
+		if (l instanceof Append) {
+			Append<T> a = (Append<T>) l;
+			return new Append<>(a.l, new Append<>(a.r, r));
+		}
 		return new Append<>(l, r);
 	}
 
