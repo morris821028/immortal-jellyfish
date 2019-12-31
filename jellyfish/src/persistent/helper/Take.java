@@ -1,7 +1,6 @@
 package persistent.helper;
 
 import persistent.PStack;
-import persistent.stack.PersistStack;
 import persistent.util.PCollections;
 
 public class Take<T> extends PStack<T> {
@@ -50,7 +49,9 @@ public class Take<T> extends PStack<T> {
 		}
 		if (x instanceof Take<?>) {
 			Take<T> t = (Take<T>) x;
-			assert n <= t.n;
+			if (n == t.n)
+				return x;
+			assert n < t.n;
 			return new Take<>(n, t.x);
 		}
 		return new Take<>(n, x);
