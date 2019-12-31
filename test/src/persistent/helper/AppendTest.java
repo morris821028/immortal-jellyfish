@@ -33,4 +33,17 @@ public class AppendTest {
 		Assertions.assertEquals(3, r.pop().top());
 		Assertions.assertEquals(2, r.pop().size());
 	}
+
+	@Test
+	public void testAppendRecursive() {
+		PStack<Integer> p = PCollections.emptyStack();
+
+		final int n = 10000;
+		for (int i = 0; i < n; i++)
+			p = Append.create(p, PStack.<Integer>of(i));
+		for (int i = 0; i < n; i++) {
+			Assertions.assertEquals(i, p.top());
+			p = p.pop();
+		}
+	}
 }
