@@ -25,7 +25,7 @@ import persistent.queue.RealtimeQueue;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
 public class QueueBenchmark {
-	@Param({ "100000", "1000000" })
+	@Param({ "1000000" })
 	int queSize;
 
 	@Benchmark
@@ -103,6 +103,74 @@ public class QueueBenchmark {
 		for (int i = 0; i < queSize; i++) {
 			Integer v = peQueue.front();
 			blackhole.consume(v);
+		}
+	}
+
+	@Benchmark
+	public void testSizeRealtime(Blackhole blackhole) {
+		for (int i = 0; i < queSize; i++) {
+			int sz = rtQueue.size();
+			blackhole.consume(sz);
+		}
+	}
+
+	@Benchmark
+	public void testSizePreEval(Blackhole blackhole) {
+		for (int i = 0; i < queSize; i++) {
+			int sz = peQueue.size();
+			blackhole.consume(sz);
+		}
+	}
+
+	@Benchmark
+	public void testIsEmptyRealtime(Blackhole blackhole) {
+		for (int i = 0; i < queSize; i++) {
+			blackhole.consume(rtQueue.isEmpty());
+		}
+	}
+
+	@Benchmark
+	public void testIsEmptyPreEval(Blackhole blackhole) {
+		for (int i = 0; i < queSize; i++) {
+			blackhole.consume(peQueue.isEmpty());
+		}
+	}
+
+	@Benchmark
+	public void testPushCopyRealtime(Blackhole blackhole) {
+		for (int i = 0; i < queSize; i++) {
+			blackhole.consume(rtQueue.push(i));
+		}
+	}
+
+	@Benchmark
+	public void testPushCopyPreEval(Blackhole blackhole) {
+		for (int i = 0; i < queSize; i++) {
+			blackhole.consume(peQueue.push(i));
+		}
+	}
+
+	@Benchmark
+	public void testOnlyPopRealtime(Blackhole blackhole) {
+		PQueue<Integer> q = rtQueue;
+		for (int i = 0; i < queSize; i++) {
+			q = q.pop();
+			blackhole.consume(q);
+		}
+		for (int i = 0; i < queSize; i++) {
+			blackhole.consume(rtQueue.pop());
+		}
+	}
+
+	@Benchmark
+	public void testOnlyPopPreEval(Blackhole blackhole) {
+		PQueue<Integer> q = peQueue;
+		for (int i = 0; i < queSize; i++) {
+			q = q.pop();
+			blackhole.consume(q);
+		}
+		for (int i = 0; i < queSize; i++) {
+			blackhole.consume(peQueue.pop());
 		}
 	}
 }
