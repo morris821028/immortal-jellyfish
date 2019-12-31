@@ -32,19 +32,33 @@ public final class PreEvalQueue<T> extends PQueue<T> {
 
 	static class Rot<T> extends PStack<T> {
 		private final PStack<T> l;
-		private final PStack<T> r;
-		private final PStack<T> a;
+		private PStack<T> r;
+		private PStack<T> a;
 		private final int size;
+		private final T top;
 
 		Rot(PStack<T> l, PStack<T> r) {
 			this(l, r, PCollections.emptyStack());
 		}
 
 		Rot(PStack<T> l, PStack<T> r, PStack<T> a) {
-			this.l = l;
+			if (l instanceof Rot) {
+				Rot<T> rot = (Rot<T>) l;
+				assert rot.r.isEmpty();
+				this.l = Append.create(rot.l, rot.a);
+			} else {
+				this.l = l;
+			}
 			this.r = r;
 			this.a = a;
 			this.size = l.size() + r.size() + a.size();
+			if (!l.isEmpty())
+				this.top = l.top();
+			else if (!r.isEmpty())
+				this.top = r.top();
+			else
+				this.top = a.top();
+			assert this.top != null : String.format("%d %d %d", l.size(), r.size(), a.size());
 			assert this.size != 0;
 		}
 
@@ -60,26 +74,50 @@ public final class PreEvalQueue<T> extends PQueue<T> {
 
 		@Override
 		public T top() {
-			if (!l.isEmpty()) {
-				return l.top();
-			}
-			if (!r.isEmpty()) {
-				return r.top();
-			}
-			return a.top();
+			return top;
 		}
 
 		@Override
 		public PStack<T> push(T value) {
+			step();
+			if (r.isEmpty())
+				return Append.create(l.push(value), a);
 			return Append.create(PStack.<T>of(value), this);
 		}
 
 		@Override
 		public PStack<T> pop() {
-			if (r.size() == 1) {
-				return a;
+			step();
+			if (l.isEmpty()) {
+				if (r.isEmpty())
+					return a.pop();
+				if (r.size() == 1)
+					return a;
 			}
-			return new Rot<>(l.pop(), r.pop(), Append.create(PStack.<T>of(r.top()), a));
+			if (r.isEmpty())
+				return Append.create(l.pop(), a);
+			return new Rot<>(l.pop(), r.pop(), a.push(r.top()));
+		}
+
+		private Rot<T> step() {
+			if (!r.isEmpty()) {
+				a = a.push(r.top());
+				r = r.pop();
+			}
+			return this;
+		}
+
+		public static <T> PStack<T> create(PStack<T> l, PStack<T> r) {
+			if (r.size() <= 2) {
+				PStack<T> t = PCollections.emptyStack();
+				while (!r.isEmpty()) {
+					t = t.push(r.top());
+					r = r.pop();
+				}
+				return Append.create(l, t);
+			}
+
+			return new Rot<>(l, r).step();
 		}
 	}
 
@@ -96,7 +134,8 @@ public final class PreEvalQueue<T> extends PQueue<T> {
 			this.hsize = hsize - 1;
 		} else {
 			this.r = PCollections.emptyStack();
-			this.l = new Rot<>(l, r);
+			this.l = Rot.<T>create(l, r);
+
 			this.hsize = this.l.size();
 		}
 	}
@@ -122,6 +161,10 @@ public final class PreEvalQueue<T> extends PQueue<T> {
 
 	@Override
 	public PreEvalQueue<T> push(T value) {
+		if (l instanceof Rot) {
+			Rot<T> rot = (Rot<T>) l;
+			rot.step();
+		}
 		return new PreEvalQueue<>(l, r.push(value), hsize);
 	}
 
