@@ -15,7 +15,7 @@ import persistent.util.PCollections;
  * 
  * @param <T> The type of element
  */
-public final class RealtimeDeque<T> implements PDeque<T> {
+public final class RealtimeDeque<T> extends PDeque<T> {
 	@SuppressWarnings("rawtypes")
 	private static final RealtimeDeque<?> EMPTY = new RealtimeDeque();
 

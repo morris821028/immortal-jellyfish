@@ -17,9 +17,9 @@ public abstract class PQueue<T> implements Iterable<T> {
 	public abstract PQueue<T> pop();
 
 	/**
-	 * Returns an iterator over the elements in this stack from top to bottom.
+	 * Returns an iterator over the elements in this queue from front to back.
 	 * 
-	 * @return an iterator over the elements in this stack from top to bottom.
+	 * @return an iterator over the elements in this queue from front to back.
 	 */
 	@Override
 	public Iterator<T> iterator() {
@@ -46,6 +46,26 @@ public abstract class PQueue<T> implements Iterable<T> {
 			current = current.pop();
 			return val;
 		}
+	}
+
+	/**
+	 * For example, <tt>{size=4, [3, 1, 4, 1]}</tt>
+	 * 
+	 * @return The content representation.
+	 */
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("{");
+		sb.append("size=" + size() + ", [");
+		boolean first = true;
+		for (T e : this) {
+			if (!first)
+				sb.append(", ");
+			sb.append(e);
+			first = false;
+		}
+		sb.append("]}");
+		return sb.toString();
 	}
 
 	public static <T> PQueue<T> of(T value) {

@@ -25,7 +25,7 @@ import persistent.util.PCollections;
  *
  * @param <T> The type of element
  */
-public class PreEvalDeque<T> implements PDeque<T> {
+public class PreEvalDeque<T> extends PDeque<T> {
 	private static final int C = 3;
 	@SuppressWarnings("rawtypes")
 	private static final PreEvalDeque<?> EMPTY = new PreEvalDeque();
