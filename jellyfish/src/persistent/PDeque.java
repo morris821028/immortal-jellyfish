@@ -3,7 +3,16 @@ package persistent;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-
+/**
+ * A linear collection that supports element insertion and removal at both ends.
+ * The name <i>deque</i> is short for "double ended queue" and is usually
+ * pronounced "deck". Most <tt>Deque</tt> implementations is immutable by
+ * insertion and removal, but this interface supports immutable deque.
+ * 
+ * @author morrisy
+ *
+ * @param <T> the type of elements held in this collection
+ */
 public abstract class PDeque<T> implements Iterable<T> {
 	public abstract boolean isEmpty();
 
