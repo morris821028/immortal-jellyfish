@@ -116,32 +116,26 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 		return lhs.size() + rhs.size();
 	}
 
+	private static <T> T bottom(PStack<T> stk) {
+		for (int i = stk.size() - 1; i >= 1; i--)
+			stk = stk.pop();
+		return stk.top();
+	}
+
 	@Override
 	public T front() {
 		if (!lhs.isEmpty())
 			return lhs.top();
-		if (rhs.size() == 1)
-			return rhs.top();
-		else if (rhs.size() == 2)
-			return rhs.pop().top();
-		else if (rhs.size() == 3)
-			return rhs.pop().pop().top();
-		assert false : rhs.size();
-		return null;
+		assert rhs.size() <= 3;
+		return bottom(rhs);
 	}
 
 	@Override
 	public T back() {
 		if (!rhs.isEmpty())
 			return rhs.top();
-		if (lhs.size() == 1)
-			return lhs.top();
-		else if (lhs.size() == 2)
-			return lhs.pop().top();
-		else if (lhs.size() == 3)
-			return lhs.pop().pop().top();
-		assert false;
-		return null;
+		assert lhs.size() <= 3;
+		return bottom(lhs);
 	}
 
 	public boolean isTransferring() {
@@ -151,21 +145,11 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 	@Override
 	public RealtimeDeque<T> pushFront(T value) {
 		int size = size();
-		if (size < 4) {
-			assert !isTransferring();
-			if (size == 3) {
-				T[] buf = flattenDeque();
-				T w = value;
-				T x = buf[0];
-				T y = buf[1];
-				T z = buf[2];
-				// [w, x, y, z] => [w, x] [y, z]
-				PStack<T> s = PStack.of(x, w);
-				PStack<T> b = PStack.of(y, z);
-				return new RealtimeDeque<>(s, b, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-			} else {
-				return new RealtimeDeque<>(lhs.push(value), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-			}
+		if (size == 3) {
+			T[] buf = flattenDeque();
+			PStack<T> s = PStack.of(buf[0], value);
+			PStack<T> b = PStack.of(buf[1], buf[2]);
+			return new RealtimeDeque<>(s, b, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		} else {
 			return create(lhs.push(value), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		}
@@ -174,21 +158,11 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 	@Override
 	public RealtimeDeque<T> pushBack(T value) {
 		int size = size();
-		if (size < 4) {
-			assert !isTransferring();
-			if (size == 3) {
-				T[] buf = flattenDeque();
-				T w = buf[0];
-				T x = buf[1];
-				T y = buf[2];
-				T z = value;
-				// [w, x, y, z] => [w, x] [y, z]
-				PStack<T> s = PStack.of(x, w);
-				PStack<T> b = PStack.of(y, z);
-				return new RealtimeDeque<>(s, b, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-			} else {
-				return new RealtimeDeque<>(lhs, rhs.push(value), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-			}
+		if (size == 3) {
+			T[] buf = flattenDeque();
+			PStack<T> s = PStack.of(buf[1], buf[0]);
+			PStack<T> b = PStack.of(buf[2], value);
+			return new RealtimeDeque<>(s, b, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		} else {
 			return create(lhs, rhs.push(value), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
 		}
