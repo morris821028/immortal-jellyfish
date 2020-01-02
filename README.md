@@ -38,7 +38,7 @@ Assertions.assertEquals(3, stk4.top());
 * `push(value)`: O(1)
 * `front()`: O(1)
 
-Implementation option: Realtime (Default), Prev-Evaluation, or Realtime-Extra
+Implementation option: Realtime (Default), Prev-Evaluation
 
 ```java
 PQueue<Integer> que = PCollections.emptyQueue(); // []
