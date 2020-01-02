@@ -138,10 +138,7 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 			}
 		}
 
-		if (init && tailReverseFrom != null) {
-			return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied, 4);
-		} else {
-			return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied, 3);
-		}
+		int steps = init && tailReverseFrom != null ? 4 : 3;
+		return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied, steps);
 	}
 }
