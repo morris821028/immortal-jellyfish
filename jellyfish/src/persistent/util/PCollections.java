@@ -1,11 +1,15 @@
 package persistent.util;
 
+import java.util.Comparator;
+
 import persistent.PDeque;
 import persistent.PList;
+import persistent.PPriorityQueue;
 import persistent.PQueue;
 import persistent.PStack;
 import persistent.array.TreeList;
 import persistent.deque.RealtimeDeque;
+import persistent.priority_queue.BraunPriorityQueue;
 import persistent.queue.RealtimeQueue;
 import persistent.stack.PersistStack;
 
@@ -51,5 +55,17 @@ public class PCollections {
 	 */
 	public static <T> PList<T> emptyList() {
 		return TreeList.create();
+	}
+
+	/**
+	 * Default {@link BraunPriorityQueue}
+	 * 
+	 * @param <T>        The type of element
+	 * @param comparator the comparator that will be used to order this priority
+	 *                   queue
+	 * @return The empty base of priority queue
+	 */
+	public static <T> PPriorityQueue<T> emptyPriorityQueue(Comparator<T> comparator) {
+		return BraunPriorityQueue.create(comparator);
 	}
 }
