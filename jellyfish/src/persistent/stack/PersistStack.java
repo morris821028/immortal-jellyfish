@@ -3,6 +3,8 @@ package persistent.stack;
 import persistent.PStack;
 
 /**
+ * Persistent stack support O(1) pop/push/top operations.
+ * 
  * @author morrisy
  *
  * @param <T> The type of element
