@@ -57,6 +57,23 @@ public abstract class PStack<T> implements Iterable<T> {
 		}
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("Stack {");
+		sb.append("size = " + size() + ", [");
+		PStack<T> u = this;
+		boolean first = true;
+		while (u != null && !u.isEmpty()) {
+			if (!first)
+				sb.append(", ");
+			sb.append(u.top());
+			first = false;
+			u = u.pop();
+		}
+		sb.append("]}");
+		return sb.toString();
+	}
+
 	public static <T> PStack<T> of(T value) {
 		return PersistStack.<T>create().push(value);
 	}

@@ -57,21 +57,4 @@ public class PersistStack<T> extends PStack<T> {
 	public PersistStack<T> pop() {
 		return next != null ? next : create();
 	}
-
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder("Stack {");
-		sb.append("size = " + size() + ", [");
-		PersistStack<T> u = this;
-		boolean first = true;
-		while (u != null && !u.isEmpty()) {
-			if (!first)
-				sb.append(", ");
-			sb.append(u.top());
-			first = false;
-			u = u.next;
-		}
-		sb.append("]}");
-		return sb.toString();
-	}
 }
