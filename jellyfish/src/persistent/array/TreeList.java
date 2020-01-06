@@ -36,7 +36,7 @@ public class TreeList<T> extends PList<T> {
 
 	/** Pointer to tree root node. */
 	private final PStack<Node<T>> rNodes;
-	/** The number of elements in this list. */
+	/** The number of elements in this list, leftist leaf tree */
 	private final int size;
 
 	private TreeList() {
