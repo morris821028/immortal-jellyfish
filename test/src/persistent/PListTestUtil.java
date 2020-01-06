@@ -43,7 +43,12 @@ public class PListTestUtil {
 		}
 
 		for (int i = 0; i < 1000000; i++) {
-			a = a.popBack();
+			try {
+				a = a.popBack();
+			} catch (Exception e) {
+				System.out.printf("e %d\n", i);
+				Assertions.fail(e);
+			}
 		}
 	}
 
