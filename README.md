@@ -39,3 +39,4 @@ Partial resouce uploaded in folder /reference
 * REAL-TIME QUEUE OPERATIONS IN PURE LISP, Robert HOOD and Robert MEVILL, 1981
 * REAL-TIME DEQUES, MULTIHEAD TURING MACHINES and PURELY FUNCTIONAL PROGRAMMING, Tyng-Runey Chuang and Benjamin Goldberg, 1993
 * SIMPLE AND EFFICIENT PURELY FUNCTIONAL QUEUES AND DEQUES, Chris Okasaki, 1995
+* LEAF TREES, Kaldewaij, A., & Dielissen, V. J., 1996
