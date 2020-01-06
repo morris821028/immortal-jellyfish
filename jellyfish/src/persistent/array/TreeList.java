@@ -1,9 +1,13 @@
 package persistent.array;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import persistent.PList;
 import persistent.PStack;
+import persistent.helper.Rev;
 import persistent.util.PCollections;
 
 /**
@@ -117,7 +121,7 @@ public class TreeList<T> extends PList<T> {
 	 * @throws IndexOutOfBoundsException {@inheritDoc}
 	 */
 	@Override
-	public PList<T> set(int index, T value) {
+	public TreeList<T> set(int index, T value) {
 		if (index < 0 || index >= size())
 			throw new IndexOutOfBoundsException();
 
@@ -167,7 +171,7 @@ public class TreeList<T> extends PList<T> {
 	}
 
 	@Override
-	public PList<T> pushBack(T value) {
+	public TreeList<T> pushBack(T value) {
 		Node<T> data = new DataNode<>(value);
 		if (isEmpty())
 			return new TreeList<>(PStack.of(data), 1);
@@ -184,7 +188,7 @@ public class TreeList<T> extends PList<T> {
 	}
 
 	@Override
-	public PList<T> popBack() {
+	public TreeList<T> popBack() {
 		if (isEmpty())
 			throw new NoSuchElementException();
 		if (size == 1)
@@ -224,6 +228,103 @@ public class TreeList<T> extends PList<T> {
 		@Override
 		public String toString() {
 			return val == null ? "null" : val.toString();
+		}
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		return new TreeListIterator<>(this);
+	}
+
+	static class NodeIterator<T> implements Iterator<T> {
+		private Deque<StackNode<T>> stk = new ArrayDeque<>();
+
+		static class StackNode<T> {
+			Node<T> node;
+			boolean left;
+
+			StackNode(Node<T> node, boolean left) {
+				this.node = node;
+				this.left = left;
+			}
+		}
+
+		NodeIterator(Node<T> root) {
+			stk.addLast(new StackNode<T>(root, true));
+			while (root instanceof TreeNode) {
+				Node<T> u = ((TreeNode<T>) root).lson;
+				stk.addLast(new StackNode<T>(u, true));
+				root = u;
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			return !stk.isEmpty();
+		}
+
+		@Override
+		public T next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			T val = ((DataNode<T>) stk.getLast().node).val;
+			findNext();
+			return val;
+		}
+
+		private void findNext() {
+			stk.removeLast();
+			while (!stk.isEmpty() && !stk.peekLast().left) {
+				stk.removeLast();
+			}
+			if (!stk.isEmpty()) {
+				stk.peekLast().left = false;
+				Node<T> root = ((TreeNode<T>) stk.peekLast().node).rson;
+				stk.addLast(new StackNode<T>(root, true));
+				while (root instanceof TreeNode) {
+					Node<T> u = ((TreeNode<T>) root).lson;
+					stk.addLast(new StackNode<T>(u, true));
+					root = u;
+				}
+			}
+		}
+	}
+
+	static class TreeListIterator<T> implements Iterator<T> {
+		private PStack<Node<T>> rNodes;
+		private NodeIterator<T> currentItr;
+		private T next;
+
+		public TreeListIterator(TreeList<T> array) {
+			rNodes = Rev.reverse(array.rNodes);
+			findNext();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return currentItr != null;
+		}
+
+		@Override
+		public T next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			T val = next;
+			findNext();
+			return val;
+		}
+
+		private void findNext() {
+			if (currentItr != null && currentItr.hasNext()) {
+				next = currentItr.next();
+				return;
+			}
+			currentItr = null;
+			if (!rNodes.isEmpty()) {
+				currentItr = new NodeIterator<>(rNodes.top());
+				rNodes = rNodes.pop();
+				next = currentItr.next();
+			}
 		}
 	}
 }
