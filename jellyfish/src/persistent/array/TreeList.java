@@ -7,6 +7,8 @@ import persistent.PStack;
 import persistent.util.PCollections;
 
 /**
+ * Paper: "Leaf Trees", Kaldewaij, A., & Dielissen, V. J., 1996
+ * 
  * <p>
  * The balanced-tree based array list. The time complexity of each operation is
  * O(log n). After m operations, the memory consumption is at most O(m log m).
