@@ -43,6 +43,10 @@ public class DeTreeList<T> extends PFullyList<T> {
 			this.root = root;
 			this.size = size;
 		}
+
+		public String toString() {
+			return "" + size;
+		}
 	}
 
 	private static interface Node<T> { // NOSONAR
@@ -84,7 +88,7 @@ public class DeTreeList<T> extends PFullyList<T> {
 	}
 
 	@Override
-	public PFullyList<T> pushFront(T value) {
+	public DeTreeList<T> pushFront(T value) {
 		PDeque<ListNode<T>> u = roots;
 		Node<T> data = new DataNode<>(value);
 
@@ -104,7 +108,7 @@ public class DeTreeList<T> extends PFullyList<T> {
 	}
 
 	@Override
-	public PFullyList<T> popFront() {
+	public DeTreeList<T> popFront() {
 		if (isEmpty())
 			throw new NoSuchElementException();
 		if (size == 1)
@@ -120,7 +124,7 @@ public class DeTreeList<T> extends PFullyList<T> {
 	}
 
 	@Override
-	public PFullyList<T> pushBack(T value) {
+	public DeTreeList<T> pushBack(T value) {
 		PDeque<ListNode<T>> u = roots;
 		Node<T> data = new DataNode<>(value);
 
@@ -140,7 +144,7 @@ public class DeTreeList<T> extends PFullyList<T> {
 	}
 
 	@Override
-	public PFullyList<T> popBack() {
+	public DeTreeList<T> popBack() {
 		if (isEmpty())
 			throw new NoSuchElementException();
 		if (size == 1)
@@ -223,5 +227,19 @@ public class DeTreeList<T> extends PFullyList<T> {
 		} else {
 			return new TreeNode<>(tn.lson, setValue(tn.rson, size >> 1, index - size, value));
 		}
+	}
+
+	@Override
+	public T front() {
+		if (isEmpty())
+			throw new NoSuchElementException();
+		return get(0);
+	}
+
+	@Override
+	public T back() {
+		if (isEmpty())
+			throw new NoSuchElementException();
+		return get(size - 1);
 	}
 }

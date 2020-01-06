@@ -42,4 +42,8 @@ public abstract class PFullyList<T> extends PList<T> {
 	 * @throws NoSuchElementException if the size if list is empty.
 	 */
 	public abstract PFullyList<T> popBack();
+
+	public abstract T front();
+
+	public abstract T back();
 }
