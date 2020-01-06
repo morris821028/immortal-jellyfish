@@ -39,9 +39,9 @@ public class PreEvalDeque<T> extends PDeque<T> {
 	private final PStack<T> r;
 
 	private static class Rot1<T> extends PStack<T> {
-		private final int n;
+		private int n;
 		private final PStack<T> l;
-		private final PStack<T> r;
+		private PStack<T> r;
 		private final int size;
 		private final T top;
 
@@ -80,7 +80,18 @@ public class PreEvalDeque<T> extends PDeque<T> {
 		public PStack<T> pop() {
 			if (size == 1)
 				return PCollections.emptyStack();
-			return Rot1.create(n - C, l.pop(), Drop.create(C, r));
+			if (n >= C)
+				return Rot1.create(n - C, l.pop(), Drop.create(C, r));
+			return Rot2.create(l.pop(), Drop.create(n, r), PCollections.emptyStack());
+		}
+
+		private PStack<T> step() {
+			if (n >= C) {
+				n -= C;
+				r = Drop.drop(C, r);
+				return this;
+			}
+			return Rot2.create(l, Drop.create(n, r), PCollections.emptyStack());
 		}
 
 		private static <T> PStack<T> create(int n, PStack<T> l, PStack<T> r) {
@@ -92,8 +103,8 @@ public class PreEvalDeque<T> extends PDeque<T> {
 
 	private static class Rot2<T> extends PStack<T> {
 		private final PStack<T> l;
-		private final PStack<T> r;
-		private final PStack<T> a;
+		private PStack<T> r;
+		private PStack<T> a;
 		private final int size;
 		private final T top;
 
@@ -130,7 +141,18 @@ public class PreEvalDeque<T> extends PDeque<T> {
 		public PStack<T> pop() {
 			if (size == 1)
 				return PCollections.emptyStack();
-			return create(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.create(C, r)), a));
+			if (r.size() >= C)
+				return create(l.pop(), Drop.create(C, r), Append.create(Rev.create(Take.take(C, r)), a));
+			return create(l.pop(), r, a);
+		}
+
+		private PStack<T> step() {
+			if (r.size() >= C) {
+				a = Append.create(Rev.create(Take.take(C, r)), a);
+				r = Drop.drop(C, r);
+				return this;
+			}
+			return Append.create(l, Append.create(Rev.create(r), a));
 		}
 
 		private static <T> PStack<T> create(PStack<T> l, PStack<T> r, PStack<T> a) {
@@ -146,6 +168,22 @@ public class PreEvalDeque<T> extends PDeque<T> {
 	}
 
 	private PreEvalDeque(PStack<T> l, PStack<T> r) {
+		if (l instanceof Rot1) {
+			Rot1<T> rot = (Rot1<T>) l;
+			l = rot.step();
+		}
+		if (r instanceof Rot1) {
+			Rot1<T> rot = (Rot1<T>) r;
+			r = rot.step();
+		}
+		if (l instanceof Rot2) {
+			Rot2<T> rot = (Rot2<T>) l;
+			l = rot.step();
+		}
+		if (r instanceof Rot2) {
+			Rot2<T> rot = (Rot2<T>) r;
+			r = rot.step();
+		}
 		if (l.size() > C * r.size() + 1) {
 			int n = (l.size() + r.size()) / 2;
 			PStack<T> ll = Take.create(n, l);
