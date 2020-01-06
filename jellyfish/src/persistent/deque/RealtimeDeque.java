@@ -207,7 +207,7 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 	private static <T> RealtimeDeque<T> step(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux,
 			PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied, int cost) {
 		if (sNew != null) {
-			int tMove = sFrom != null ? bAux.size() + bFrom.size() - sAux.size() - sFrom.size() - 1 : 0;
+			int tMove = sFrom != null ? bAux.size() + bFrom.size() - (sAux.size() + sFrom.size()) - 1 : 0;
 
 			while (bAux.size() < tMove && cost > 0) {
 				bAux = bAux.push(bFrom.top());
@@ -232,12 +232,11 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 				if (!bAux.isEmpty()) {
 					bNew = bNew.push(bAux.top());
 					bAux = bAux.pop();
-				}
-
-				if (!bFrom.isEmpty()) {
-					sNew = sNew.push(bFrom.top());
-					bFrom = bFrom.pop();
-					continue;
+					if (!bFrom.isEmpty()) {
+						sNew = sNew.push(bFrom.top());
+						bFrom = bFrom.pop();
+						continue;
+					}
 				}
 
 				int targetSize = sb ? lhs.size() : rhs.size();
@@ -250,11 +249,11 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 				if (sCopied == targetSize) {
 					int m = (sNew.size() + sAux.size()) / 2;
 					if (sb) {
-						lhs = sNew;
+						lhs = sNew.top() == lhs.top() ? sNew : sNew.pop().push(lhs.top());
 						rhs = Take.create(rhs.size() - m - 1, rhs);
 					} else {
 						lhs = Take.create(lhs.size() - m - 1, lhs);
-						rhs = sNew;
+						rhs = sNew.top() == rhs.top() ? sNew : sNew.pop().push(rhs.top());
 					}
 
 					sFrom = sAux = sNew = null;
@@ -273,7 +272,8 @@ public final class RealtimeDeque<T> extends PDeque<T> {
 			PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied) {
 		boolean init = sAux == null;
 
-		if (lhs.size() + rhs.size() <= 4 || (lhs.size() <= rhs.size() * 3 && lhs.size() * 3 >= rhs.size())) {
+		if (lhs.size() + rhs.size() <= 4
+				|| (Math.min(lhs.size(), rhs.size()) * 3 >= Math.max(lhs.size(), rhs.size()))) {
 			sFrom = null;
 			sAux = null;
 			sNew = null;
