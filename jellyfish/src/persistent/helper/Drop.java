@@ -6,7 +6,7 @@ import persistent.util.PCollections;
 public class Drop<T> extends PStack<T> {
 	private final PStack<T> x;
 	private final int n;
-	
+
 	private PStack<T> rx;
 	private PStack<T> pop;
 	private T top;
@@ -55,13 +55,14 @@ public class Drop<T> extends PStack<T> {
 	PStack<T> getReal() {
 		if (rx != null)
 			return rx;
-		rx = x;
-		for (int i = 1; i <= n; i++) {
-			PStack<T> res = rx.pop();
-			assert res.size() == x.size() - i : String.format("%s %s", rx.getClass(), res.getClass());
-			rx = res;
-		}
+		rx = drop(n, x);
 		return rx;
+	}
+
+	public static <T> PStack<T> drop(int n, PStack<T> x) {
+		for (int i = 1; i <= n; i++)
+			x = x.pop();
+		return x;
 	}
 
 	public static <T> PStack<T> create(int n, PStack<T> x) {
@@ -69,6 +70,6 @@ public class Drop<T> extends PStack<T> {
 			return x;
 		if (n >= x.size())
 			return PCollections.emptyStack();
-		return new Drop<>(n, x);
+		return drop(n, x);
 	}
 }

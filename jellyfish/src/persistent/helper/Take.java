@@ -40,6 +40,17 @@ public class Take<T> extends PStack<T> {
 		return create(n - 1, x.pop());
 	}
 
+	public static <T> PStack<T> take(int n, PStack<T> x) {
+		assert n <= 3;
+		PStack<T> ret = PCollections.emptyStack();
+		while (n > 0) {
+			ret = ret.push(x.top());
+			x = x.pop();
+			n--;
+		}
+		return Rev.reverse(ret);
+	}
+
 	public static <T> PStack<T> create(int n, PStack<T> x) {
 		if (n == 0)
 			return PCollections.emptyStack();
