@@ -12,7 +12,7 @@ import persistent.util.PCollections;
  *
  * @param <T> The type of element
  */
-public final class RealtimeQueue<T> extends PQueue<T> {
+public class RealtimeQueue<T> extends PQueue<T> {
 	@SuppressWarnings("rawtypes")
 	private static final RealtimeQueue<?> EMPTY = new RealtimeQueue();
 
@@ -21,29 +21,74 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 		return (RealtimeQueue<T>) EMPTY;
 	}
 
-	private final PStack<T> head;
-	private final PStack<T> tail;
+	private static class TransferQueue<T> extends RealtimeQueue<T> {
+		private final PStack<T> tailReverseFrom;
+		private final PStack<T> tailReverseTo;
+		private final PStack<T> headReverseFrom;
+		private final PStack<T> headReverseTo;
+		private final int headCopied;
 
-	private final PStack<T> tailReverseFrom;
-	private final PStack<T> tailReverseTo;
-	private final PStack<T> headReverseFrom;
-	private final PStack<T> headReverseTo;
-	private final int headCopied;
+		private TransferQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom, PStack<T> tailReverseTo,
+				PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
+			super(head, tail);
+			this.headCopied = headCopied;
 
-	private RealtimeQueue() {
-		this(PCollections.emptyStack(), PCollections.emptyStack(), null, null, null, null, 0);
+			this.tailReverseFrom = tailReverseFrom;
+			this.tailReverseTo = tailReverseTo;
+			this.headReverseFrom = headReverseFrom;
+			this.headReverseTo = headReverseTo;
+		}
+
+		@Override
+		public int size() {
+			return super.size() + tailReverseTo.size() + tailReverseFrom.size() - headCopied;
+		}
+
+		@Override
+		public PQueue<T> push(T value) {
+			return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+					headCopied);
+		}
+
+		@Override
+		public PQueue<T> pop() {
+			return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied);
+		}
+
+		private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
+				PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
+			if (tail.size() > head.size()) {
+				assert tailReverseFrom == null && tailReverseTo == null && headReverseFrom == null
+						&& headReverseTo == null : "Internal error: invariant failure.";
+				if (tail.size() == 1) {
+					head = tail;
+					tail = PCollections.emptyStack();
+					return new RealtimeQueue<>(head, tail);
+				} else {
+					// initiate the transfer process
+					tailReverseFrom = tail;
+					tailReverseTo = PCollections.emptyStack();
+					headReverseFrom = head;
+					headReverseTo = PCollections.emptyStack();
+
+					tail = PCollections.emptyStack();
+				}
+			}
+
+			return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied, 3);
+		}
 	}
 
-	private RealtimeQueue(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom, PStack<T> tailReverseTo,
-			PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
-		this.headCopied = headCopied;
+	final PStack<T> head;
+	final PStack<T> tail;
+
+	private RealtimeQueue() {
+		this(PCollections.emptyStack(), PCollections.emptyStack());
+	}
+
+	private RealtimeQueue(PStack<T> head, PStack<T> tail) {
 		this.head = head;
 		this.tail = tail;
-
-		this.tailReverseFrom = tailReverseFrom;
-		this.tailReverseTo = tailReverseTo;
-		this.headReverseFrom = headReverseFrom;
-		this.headReverseTo = headReverseTo;
 	}
 
 	@Override
@@ -53,11 +98,7 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 
 	@Override
 	public int size() {
-		int size = head.size() + tail.size();
-		if (tailReverseTo != null) {
-			size += tailReverseTo.size() + tailReverseFrom.size() - headCopied;
-		}
-		return size;
+		return head.size() + tail.size();
 	}
 
 	public PQueue<T> clear() {
@@ -71,13 +112,12 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 
 	@Override
 	public PQueue<T> push(T value) {
-		return create(head, tail.push(value), tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
-				headCopied);
+		return create(head, tail.push(value));
 	}
 
 	@Override
 	public PQueue<T> pop() {
-		return create(head.pop(), tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied);
+		return create(head.pop(), tail);
 	}
 
 	/**
@@ -113,32 +153,30 @@ public final class RealtimeQueue<T> extends PQueue<T> {
 				}
 			}
 		}
-		return new RealtimeQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
-				headCopied);
+		if (tailReverseFrom != null)
+			return new TransferQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+					headCopied);
+		return new RealtimeQueue<>(head, tail);
 	}
 
-	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailReverseFrom,
-			PStack<T> tailReverseTo, PStack<T> headReverseFrom, PStack<T> headReverseTo, int headCopied) {
-		boolean init = tailReverseFrom == null;
-
+	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail) {
 		if (tail.size() > head.size()) {
-			assert tailReverseFrom == null && tailReverseTo == null && headReverseFrom == null
-					&& headReverseTo == null : "Internal error: invariant failure.";
 			if (tail.size() == 1) {
 				head = tail;
 				tail = PCollections.emptyStack();
+				return new RealtimeQueue<>(head, tail);
 			} else {
 				// initiate the transfer process
-				tailReverseFrom = tail;
-				tailReverseTo = PCollections.emptyStack();
-				headReverseFrom = head;
-				headReverseTo = PCollections.emptyStack();
+				PStack<T> tailReverseFrom = tail;
+				PStack<T> tailReverseTo = PCollections.emptyStack();
+				PStack<T> headReverseFrom = head;
+				PStack<T> headReverseTo = PCollections.emptyStack();
 
 				tail = PCollections.emptyStack();
+				return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, 0, 4);
 			}
+		} else {
+			return new RealtimeQueue<>(head, tail);
 		}
-
-		int steps = init && tailReverseFrom != null ? 4 : 3;
-		return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, headCopied, steps);
 	}
 }
