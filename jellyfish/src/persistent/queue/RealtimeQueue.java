@@ -143,20 +143,16 @@ public class RealtimeQueue<T> extends PQueue<T> {
 
 					if (headCopied == head.size()) {
 						head = tailReverseTo;
-						tailReverseFrom = null;
-						tailReverseTo = null;
-						headReverseFrom = null;
-						headReverseTo = null;
-						headCopied = 0;
-						break;
+						return new RealtimeQueue<>(head, tail);
 					}
 				}
 			}
 		}
-		if (tailReverseFrom != null)
-			return new TransferQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
-					headCopied);
-		return new RealtimeQueue<>(head, tail);
+
+		if (tailReverseFrom == null)
+			return new RealtimeQueue<>(head, tail);
+		return new TransferQueue<>(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo,
+				headCopied);
 	}
 
 	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail) {
@@ -164,7 +160,6 @@ public class RealtimeQueue<T> extends PQueue<T> {
 			if (tail.size() == 1) {
 				head = tail;
 				tail = PCollections.emptyStack();
-				return new RealtimeQueue<>(head, tail);
 			} else {
 				// initiate the transfer process
 				PStack<T> tailReverseFrom = tail;
@@ -175,8 +170,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 				tail = PCollections.emptyStack();
 				return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, 0, 4);
 			}
-		} else {
-			return new RealtimeQueue<>(head, tail);
 		}
+		return new RealtimeQueue<>(head, tail);
 	}
 }
