@@ -121,8 +121,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 
 		private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailRevTo, PStack<T> headRevTo,
 				int headCopied) {
-			return step(head, tail, PCollections.emptyStack(), tailRevTo, PCollections.emptyStack(), headRevTo,
-					headCopied, 3);
+			return stepPost(head, tail, tailRevTo, headRevTo, headCopied, 3);
 		}
 	}
 
@@ -166,6 +165,25 @@ public class RealtimeQueue<T> extends PQueue<T> {
 	public PQueue<T> pop() {
 		return create(head.pop(), tail);
 	}
+	
+	private static <T> RealtimeQueue<T> stepPost(PStack<T> head, PStack<T> tail, PStack<T> tailRevTo,
+			PStack<T> headRevTo, int headCopied, int cost) {
+		while (cost > 0) {
+			cost--;
+
+			if (!headRevTo.isEmpty() && headCopied < head.size()) {
+				headCopied++;
+				tailRevTo = tailRevTo.push(headRevTo.top());
+				headRevTo = headRevTo.pop();
+			}
+
+			if (headCopied == head.size()) {
+				head = tailRevTo;
+				return new RealtimeQueue<>(head, tail);
+			}
+		}
+		return new TransPostQueue<>(head, tail, tailRevTo, headRevTo, headCopied);
+	}
 
 	/**
 	 * Perform incremental steps
@@ -181,24 +199,13 @@ public class RealtimeQueue<T> extends PQueue<T> {
 				tailRevTo = tailRevTo.push(tailRevFrom.top());
 				tailRevFrom = tailRevFrom.pop();
 			} else if (tailRevFrom.isEmpty()) {
-				if (!headRevTo.isEmpty() && headCopied < head.size()) {
-					headCopied++;
-					tailRevTo = tailRevTo.push(headRevTo.top());
-					headRevTo = headRevTo.pop();
-				}
-
-				if (headCopied == head.size()) {
-					head = tailRevTo;
-					return new RealtimeQueue<>(head, tail);
-				}
+				return stepPost(head, tail, tailRevTo, headRevTo, headCopied, cost + 1);
 			}
 		}
 
 		if (tailRevTo.isEmpty())
 			return new TransPrevQueue<>(head, tail, tailRevFrom, headRevFrom, headRevTo);
-		if (!tailRevFrom.isEmpty())
-			return new TransMidQueue<>(head, tail, tailRevFrom, tailRevTo, headRevTo);
-		return new TransPostQueue<>(head, tail, tailRevTo, headRevTo, headCopied);
+		return new TransMidQueue<>(head, tail, tailRevFrom, tailRevTo, headRevTo);
 	}
 
 	private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail) {
