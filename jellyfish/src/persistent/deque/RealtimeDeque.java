@@ -107,12 +107,80 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		}
 	}
 
-	static class TransferDeque<T> extends RealtimeDeque<T> {
+	static abstract class TransDeque<T> extends RealtimeDeque<T> {
+		public TransDeque(PStack<T> lhs, PStack<T> rhs) {
+			super(lhs, rhs);
+		}
+
+		@Override
+		public RealtimeDeque<T> pushFront(T value) {
+			return createTrans(lhs.push(value), rhs);
+		}
+
+		@Override
+		public RealtimeDeque<T> pushBack(T value) {
+			return createTrans(lhs, rhs.push(value));
+		}
+
+		@Override
+		public PDeque<T> popFront() {
+			int size = size();
+			if (size < 4)
+				return super.popFront();
+			return createTrans(lhs.pop(), rhs);
+		}
+
+		@Override
+		public PDeque<T> popBack() {
+			int size = size();
+			if (size < 4)
+				return super.popBack();
+			return createTrans(lhs, rhs.pop());
+		}
+
+		abstract RealtimeDeque<T> createTrans(PStack<T> lhs, PStack<T> rhs);
+	}
+
+	static class TransPrevDeque<T> extends TransDeque<T> {
 		/**
 		 * The small stack, is the smaller stack of two parts in begin. Then, present
 		 * the state of copy transferring.
 		 */
 		protected final PStack<T> sFrom;
+		/** The small auxiliary-stack, store reversed version of {@link #sFrom}. */
+		protected final PStack<T> sAux;
+
+		/**
+		 * The big stack, is the bigger stack of two parts in begin. Then, present the
+		 * state of copy transferring.
+		 */
+		protected final PStack<T> bFrom;
+		/**
+		 * The big auxiliary-stack, store partial reversed version of {@link #bFrom}.
+		 */
+		protected final PStack<T> bAux;
+
+		private TransPrevDeque(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux, PStack<T> bFrom,
+				PStack<T> bAux) {
+			super(lhs, rhs);
+
+			this.sFrom = sFrom;
+			this.sAux = sAux;
+
+			this.bFrom = bFrom;
+			this.bAux = bAux;
+		}
+
+		RealtimeDeque<T> createTrans(PStack<T> lhs, PStack<T> rhs) {
+			if (lhs.size() + rhs.size() <= 4
+					|| (Math.min(lhs.size(), rhs.size()) * 3 >= Math.max(lhs.size(), rhs.size())))
+				return new RealtimeDeque<>(lhs, rhs);
+
+			return stepPrev(lhs, rhs, sFrom, sAux, bFrom, bAux, 4);
+		}
+	}
+
+	static class TransPostDeque<T> extends TransDeque<T> {
 		/** The small auxiliary-stack, store reversed version of {@link #sFrom}. */
 		protected final PStack<T> sAux;
 		/** The final result of smaller stack, replace the smaller one with this. */
@@ -132,11 +200,10 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		/** The counter of copied smaller stack elements. */
 		protected final int sCopied;
 
-		private TransferDeque(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux, PStack<T> sNew,
-				PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied) {
+		private TransPostDeque(PStack<T> lhs, PStack<T> rhs, PStack<T> sAux, PStack<T> sNew, PStack<T> bFrom,
+				PStack<T> bAux, PStack<T> bNew, int sCopied) {
 			super(lhs, rhs);
 
-			this.sFrom = sFrom;
 			this.sAux = sAux;
 			this.sNew = sNew;
 
@@ -147,39 +214,12 @@ public class RealtimeDeque<T> extends PDeque<T> {
 			this.sCopied = sCopied;
 		}
 
-		@Override
-		public RealtimeDeque<T> pushFront(T value) {
-			return create(lhs.push(value), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-		}
-
-		@Override
-		public RealtimeDeque<T> pushBack(T value) {
-			return create(lhs, rhs.push(value), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-		}
-
-		@Override
-		public PDeque<T> popFront() {
-			int size = size();
-			if (size < 4)
-				return super.popFront();
-			return create(lhs.pop(), rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-		}
-
-		@Override
-		public PDeque<T> popBack() {
-			int size = size();
-			if (size < 4)
-				return super.popBack();
-			return create(lhs, rhs.pop(), sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
-		}
-
-		private static <T> RealtimeDeque<T> create(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux,
-				PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied) {
+		RealtimeDeque<T> createTrans(PStack<T> lhs, PStack<T> rhs) {
 			if (lhs.size() + rhs.size() <= 4
 					|| (Math.min(lhs.size(), rhs.size()) * 3 >= Math.max(lhs.size(), rhs.size())))
 				return new RealtimeDeque<>(lhs, rhs);
 
-			return step(lhs, rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied, 4);
+			return stepPost(lhs, rhs, sAux, sNew, bFrom, bAux, bNew, sCopied, 4);
 		}
 	}
 
@@ -281,19 +321,9 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		return buf;
 	}
 
-	/**
-	 * Perform 2 incremental steps. Totally, we will perform {@literal 4n + 6} for
-	 * the transform process.
-	 * 
-	 * @param <T> The type of element
-	 * @param q   The adjusting deque
-	 * @return An adjusted deque by exact 2 steps. If remaining steps is not enough,
-	 *         return the last state.
-	 */
-	private static <T> RealtimeDeque<T> step(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux,
-			PStack<T> sNew, PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied, int cost) {
-		int tMove = sFrom != null ? bAux.size() + bFrom.size() - (sAux.size() + sFrom.size()) - 1 : 0;
-
+	private static <T> RealtimeDeque<T> stepPrev(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux,
+			PStack<T> bFrom, PStack<T> bAux, int cost) {
+		int tMove = bAux.size() + bFrom.size() - (sAux.size() + sFrom.size()) - 1;
 		while (bAux.size() < tMove && cost > 0) {
 			bAux = bAux.push(bFrom.top());
 			bFrom = bFrom.pop();
@@ -307,13 +337,17 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		}
 
 		if (cost == 0)
-			return new TransferDeque<>(lhs, rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+			return new TransPrevDeque<>(lhs, rhs, sFrom, sAux, bFrom, bAux);
+		PStack<T> empty = PCollections.emptyStack();
+		return stepPost(lhs, rhs, sAux, empty, bFrom, bAux, empty, 0, cost);
+	}
 
-		sFrom = null;
-
+	private static <T> RealtimeDeque<T> stepPost(PStack<T> lhs, PStack<T> rhs, PStack<T> sAux, PStack<T> sNew,
+			PStack<T> bFrom, PStack<T> bAux, PStack<T> bNew, int sCopied, int cost) {
 		boolean sb = lhs.size() < rhs.size();
 		while (cost > 0) {
 			cost--;
+
 			if (!bAux.isEmpty()) {
 				bNew = bNew.push(bAux.top());
 				bAux = bAux.pop();
@@ -344,7 +378,7 @@ public class RealtimeDeque<T> extends PDeque<T> {
 				return new RealtimeDeque<>(lhs, rhs);
 			}
 		}
-		return new TransferDeque<>(lhs, rhs, sFrom, sAux, sNew, bFrom, bAux, bNew, sCopied);
+		return new TransPostDeque<>(lhs, rhs, sAux, sNew, bFrom, bAux, bNew, sCopied);
 	}
 
 	private static <T> RealtimeDeque<T> create(PStack<T> lhs, PStack<T> rhs) {
@@ -352,16 +386,11 @@ public class RealtimeDeque<T> extends PDeque<T> {
 			// initiate the transfer process
 
 			PStack<T> empty = PCollections.emptyStack();
-			PStack<T> sFrom;
-			PStack<T> bFrom;
 			if (lhs.size() < rhs.size()) {
-				sFrom = lhs;
-				bFrom = rhs;
+				return stepPrev(lhs, rhs, lhs, empty, rhs, empty, 8);
 			} else {
-				sFrom = rhs;
-				bFrom = lhs;
+				return stepPrev(lhs, rhs, rhs, empty, lhs, empty, 8);
 			}
-			return step(lhs, rhs, sFrom, empty, empty, bFrom, empty, empty, 0, 8);
 		}
 		return new RealtimeDeque<>(lhs, rhs);
 	}
