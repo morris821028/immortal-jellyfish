@@ -51,7 +51,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 		}
 
 		private PQueue<T> createTrans(PStack<T> head, PStack<T> tail) {
-			return step(head, tail, tailRevFrom, PCollections.emptyStack(), headRevFrom, headRevTo, 0, 3);
+			return stepPrev(head, tail, tailRevFrom, PCollections.emptyStack(), headRevFrom, headRevTo, 3);
 		}
 	}
 
@@ -85,7 +85,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 		}
 
 		private PQueue<T> createTrans(PStack<T> head, PStack<T> tail) {
-			return step(head, tail, tailRevFrom, tailRevTo, PCollections.emptyStack(), headRevTo, 0, 3);
+			return stepPrev(head, tail, tailRevFrom, tailRevTo, PCollections.emptyStack(), headRevTo, 3);
 		}
 	}
 
@@ -165,19 +165,18 @@ public class RealtimeQueue<T> extends PQueue<T> {
 
 	private static <T> RealtimeQueue<T> stepPost(PStack<T> head, PStack<T> tail, PStack<T> tailRevTo,
 			PStack<T> headRevTo, int headCopied, int cost) {
-		while (cost > 0) {
+		int target = head.size();
+		while (cost > 0 && headCopied < target) {
 			cost--;
 
-			if (!headRevTo.isEmpty() && headCopied < head.size()) {
-				headCopied++;
-				tailRevTo = tailRevTo.push(headRevTo.top());
-				headRevTo = headRevTo.pop();
-			}
+			headCopied++;
+			tailRevTo = tailRevTo.push(headRevTo.top());
+			headRevTo = headRevTo.pop();
+		}
 
-			if (headCopied == head.size()) {
-				head = tailRevTo;
-				return new RealtimeQueue<>(head, tail);
-			}
+		if (headCopied == target) {
+			head = tailRevTo;
+			return new RealtimeQueue<>(head, tail);
 		}
 		return new TransPostQueue<>(head, tail, tailRevTo, headRevTo, headCopied);
 	}
@@ -185,8 +184,8 @@ public class RealtimeQueue<T> extends PQueue<T> {
 	/**
 	 * Perform incremental steps
 	 */
-	private static <T> RealtimeQueue<T> step(PStack<T> head, PStack<T> tail, PStack<T> tailRevFrom, PStack<T> tailRevTo,
-			PStack<T> headRevFrom, PStack<T> headRevTo, int headCopied, int cost) {
+	private static <T> RealtimeQueue<T> stepPrev(PStack<T> head, PStack<T> tail, PStack<T> tailRevFrom,
+			PStack<T> tailRevTo, PStack<T> headRevFrom, PStack<T> headRevTo, int cost) {
 		while (cost > 0) {
 			cost--;
 			if (!headRevFrom.isEmpty()) {
@@ -196,7 +195,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 				tailRevTo = tailRevTo.push(tailRevFrom.top());
 				tailRevFrom = tailRevFrom.pop();
 			} else if (tailRevFrom.isEmpty()) {
-				return stepPost(head, tail, tailRevTo, headRevTo, headCopied, cost + 1);
+				return stepPost(head, tail, tailRevTo, headRevTo, 0, cost + 1);
 			}
 		}
 
@@ -218,7 +217,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 				PStack<T> headReverseTo = PCollections.emptyStack();
 
 				tail = PCollections.emptyStack();
-				return step(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, 0, 4);
+				return stepPrev(head, tail, tailReverseFrom, tailReverseTo, headReverseFrom, headReverseTo, 4);
 			}
 		}
 		return new RealtimeQueue<>(head, tail);

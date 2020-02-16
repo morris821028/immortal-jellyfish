@@ -107,7 +107,7 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		}
 	}
 
-	static abstract class TransDeque<T> extends RealtimeDeque<T> {
+	abstract static class TransDeque<T> extends RealtimeDeque<T> {
 		public TransDeque(PStack<T> lhs, PStack<T> rhs) {
 			super(lhs, rhs);
 		}
