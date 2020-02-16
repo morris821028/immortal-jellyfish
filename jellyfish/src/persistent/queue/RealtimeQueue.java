@@ -42,16 +42,15 @@ public class RealtimeQueue<T> extends PQueue<T> {
 
 		@Override
 		public PQueue<T> push(T value) {
-			return create(head, tail.push(value), tailRevFrom, headRevFrom, headRevTo);
+			return createTrans(head, tail.push(value));
 		}
 
 		@Override
 		public PQueue<T> pop() {
-			return create(head.pop(), tail, tailRevFrom, headRevFrom, headRevTo);
+			return createTrans(head.pop(), tail);
 		}
 
-		private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailRevFrom,
-				PStack<T> headRevFrom, PStack<T> headRevTo) {
+		private PQueue<T> createTrans(PStack<T> head, PStack<T> tail) {
 			return step(head, tail, tailRevFrom, PCollections.emptyStack(), headRevFrom, headRevTo, 0, 3);
 		}
 	}
@@ -77,16 +76,15 @@ public class RealtimeQueue<T> extends PQueue<T> {
 
 		@Override
 		public PQueue<T> push(T value) {
-			return create(head, tail.push(value), tailRevFrom, tailRevTo, headRevTo);
+			return createTrans(head, tail.push(value));
 		}
 
 		@Override
 		public PQueue<T> pop() {
-			return create(head.pop(), tail, tailRevFrom, tailRevTo, headRevTo);
+			return createTrans(head.pop(), tail);
 		}
 
-		private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailRevFrom, PStack<T> tailRevTo,
-				PStack<T> headRevTo) {
+		private PQueue<T> createTrans(PStack<T> head, PStack<T> tail) {
 			return step(head, tail, tailRevFrom, tailRevTo, PCollections.emptyStack(), headRevTo, 0, 3);
 		}
 	}
@@ -111,16 +109,15 @@ public class RealtimeQueue<T> extends PQueue<T> {
 
 		@Override
 		public PQueue<T> push(T value) {
-			return create(head, tail.push(value), tailRevTo, headRevTo, headCopied);
+			return createTrans(head, tail.push(value));
 		}
 
 		@Override
 		public PQueue<T> pop() {
-			return create(head.pop(), tail, tailRevTo, headRevTo, headCopied);
+			return createTrans(head.pop(), tail);
 		}
 
-		private static <T> PQueue<T> create(PStack<T> head, PStack<T> tail, PStack<T> tailRevTo, PStack<T> headRevTo,
-				int headCopied) {
+		private PQueue<T> createTrans(PStack<T> head, PStack<T> tail) {
 			return stepPost(head, tail, tailRevTo, headRevTo, headCopied, 3);
 		}
 	}
@@ -165,7 +162,7 @@ public class RealtimeQueue<T> extends PQueue<T> {
 	public PQueue<T> pop() {
 		return create(head.pop(), tail);
 	}
-	
+
 	private static <T> RealtimeQueue<T> stepPost(PStack<T> head, PStack<T> tail, PStack<T> tailRevTo,
 			PStack<T> headRevTo, int headCopied, int cost) {
 		while (cost > 0) {
