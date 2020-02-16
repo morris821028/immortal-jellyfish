@@ -176,21 +176,24 @@ public class RealtimeQueue<T> extends PQueue<T> {
 	 */
 	private static <T> RealtimeQueue<T> stepPrev(PStack<T> head, PStack<T> tail, PStack<T> tailRevFrom,
 			PStack<T> tailRevTo, PStack<T> headRevFrom, PStack<T> headRevTo, int cost) {
-		while (cost > 0) {
+		while (cost > 0 && !headRevFrom.isEmpty()) {
+			headRevTo = headRevTo.push(headRevFrom.top());
+			headRevFrom = headRevFrom.pop();
 			cost--;
-			if (!headRevFrom.isEmpty()) {
-				headRevTo = headRevTo.push(headRevFrom.top());
-				headRevFrom = headRevFrom.pop();
-			} else if (!tailRevFrom.isEmpty()) {
-				tailRevTo = tailRevTo.push(tailRevFrom.top());
-				tailRevFrom = tailRevFrom.pop();
-			} else if (tailRevFrom.isEmpty()) {
-				return stepPost(head, tail, tailRevTo, headRevTo, 0, cost + 1);
-			}
+		}
+		while (cost > 0 && !tailRevFrom.isEmpty()) {
+			tailRevTo = tailRevTo.push(tailRevFrom.top());
+			tailRevFrom = tailRevFrom.pop();
+			cost--;
 		}
 
-		if (tailRevTo.isEmpty())
+		if (cost > 0 && tailRevFrom.isEmpty()) {
+			return stepPost(head, tail, tailRevTo, headRevTo, 0, cost);
+		}
+
+		if (tailRevTo.isEmpty()) {
 			return new TransPrevQueue<>(head, tail, tailRevFrom, headRevFrom, headRevTo);
+		}
 		return new TransMidQueue<>(head, tail, tailRevFrom, tailRevTo, headRevTo);
 	}
 
