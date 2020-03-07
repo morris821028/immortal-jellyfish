@@ -34,4 +34,9 @@ public class BraunListTest {
 	public void testZigZag() {
 		PListTestUtil.testZigZag(BraunList.create());
 	}
+
+	@Test
+	public void testEquals() {
+		PListTestUtil.testEquals(BraunList.create());
+	}
 }

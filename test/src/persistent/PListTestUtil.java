@@ -1,6 +1,11 @@
 package persistent;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.jupiter.api.Assertions;
+
+import junit.framework.Assert;
 
 public class PListTestUtil {
 	private PListTestUtil() {
@@ -129,5 +134,25 @@ public class PListTestUtil {
 			Assertions.assertEquals(a.get(0), 0);
 			Assertions.assertEquals(a.get(1), 1);
 		}
+	}
+
+	public static void testEquals(PList<Integer> empty) {
+		PList<Integer> a = empty;
+		a = a.pushBack(5);
+		a = a.pushBack(7);
+		PList<Integer> b = empty;
+		b = b.pushBack(5);
+		b = b.pushBack(7);
+		Assertions.assertTrue(a.equals(b));
+		Assertions.assertTrue(b.equals(a));
+
+		Set<PList<Integer>> set = new HashSet<>();
+		set.add(a);
+		set.add(b);
+		Assertions.assertEquals(set.size(), 1);
+
+		b = b.pushBack(5);
+		Assertions.assertFalse(a.equals(b));
+		Assertions.assertFalse(b.equals(a));
 	}
 }

@@ -2,6 +2,7 @@ package persistent;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import persistent.array.TreeList;
 
@@ -95,6 +96,36 @@ public abstract class PList<T> implements Iterable<T> {
 		}
 		sb.append("]}");
 		return sb.toString();
+	}
+
+	/**
+	 * Compares the specified object with this list for equality. 
+	 */
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof PList))
+			return false;
+		PList<?> otherList = (PList<?>) other;
+		if (otherList.size() != this.size())
+			return false;
+		Iterator<?> itr = this.iterator();
+		Iterator<?> jtr = otherList.iterator();
+		while (itr.hasNext()) {
+			if (!Objects.equals(itr.next(), jtr.next()))
+				return false;
+		}
+		return !itr.hasNext() && !jtr.hasNext();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		int hash = 0;
+		for (T e : this)
+			hash = Objects.hash(hash, e);
+		return hash;
 	}
 
 	static class ListIterator<T> implements Iterator<T> {

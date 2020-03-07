@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import persistent.PDeque;
 import persistent.PFullyList;
 import persistent.PListTestUtil;
+import persistent.array.BraunList;
 
 public class DeTreeListTest {
 	@Test
@@ -135,5 +136,10 @@ public class DeTreeListTest {
 		Assertions.assertEquals(stk.isEmpty(), true);
 		Assertions.assertEquals(stk.size(), 0);
 		System.out.println("testArrayAsStackBack() pass");
+	}
+
+	@Test
+	public void testEquals() {
+		PListTestUtil.testEquals(DeTreeList.create());
 	}
 }
