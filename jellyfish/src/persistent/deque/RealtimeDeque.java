@@ -1,10 +1,12 @@
 package persistent.deque;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import persistent.PDeque;
 import persistent.PStack;
 import persistent.helper.Take;
+import persistent.util.ConcatenatedIterator;
 import persistent.util.PCollections;
 
 /**
@@ -305,7 +307,7 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		return create(lhs, rhs.pop());
 	}
 
-	T[] flattenDeque() {
+	private T[] flattenDeque() {
 		int size = size();
 		assert size <= 4;
 		PStack<T> tmp = lhs;
@@ -321,6 +323,14 @@ public class RealtimeDeque<T> extends PDeque<T> {
 			tmp = tmp.pop();
 		}
 		return buf;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Iterator<T> iterator() {
+		return ConcatenatedIterator.create(lhs.iterator(), rhs.descendingIterator());
 	}
 
 	private static <T> RealtimeDeque<T> stepPrev(PStack<T> lhs, PStack<T> rhs, PStack<T> sFrom, PStack<T> sAux,

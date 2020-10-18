@@ -1,6 +1,7 @@
 package persistent.stack;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
@@ -35,5 +36,15 @@ public class PersistStackTest {
 		excepted.add(2);
 		excepted.add(1);
 		Assertions.assertEquals(excepted, list);
+	}
+
+	@Test
+	public void testDescendingIterator() {
+		PStack<Integer> stk = PStack.of(1);
+		stk = stk.push(2);
+		Iterator<Integer> itr = stk.descendingIterator();
+		Assertions.assertEquals(itr.next(), 1);
+		Assertions.assertEquals(itr.next(), 2);
+		Assertions.assertEquals(itr.hasNext(), false);
 	}
 }

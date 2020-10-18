@@ -1,10 +1,15 @@
 package persistent.array.fully;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import persistent.PDeque;
 import persistent.PFullyList;
 import persistent.PList;
+import persistent.array.TreeList.Node;
+import persistent.array.TreeList.NodeIterator;
+import persistent.array.TreeList.TreeNode;
+import persistent.array.TreeList.DataNode;
 import persistent.util.PCollections;
 
 /**
@@ -46,32 +51,6 @@ public class DeTreeList<T> extends PFullyList<T> {
 
 		public String toString() {
 			return "" + size;
-		}
-	}
-
-	private static interface Node<T> { // NOSONAR
-	}
-
-	private static final class TreeNode<T> implements Node<T> {
-		private final Node<T> lson;
-		private final Node<T> rson;
-
-		TreeNode(Node<T> l, Node<T> r) {
-			this.lson = l;
-			this.rson = r;
-		}
-	}
-
-	private static final class DataNode<T> implements Node<T> {
-		private final T val;
-
-		DataNode(T val) {
-			this.val = val;
-		}
-
-		@Override
-		public String toString() {
-			return val == null ? "null" : val.toString();
 		}
 	}
 
@@ -174,12 +153,10 @@ public class DeTreeList<T> extends PFullyList<T> {
 		if (index < 0 || index >= size)
 			throw new IndexOutOfBoundsException();
 		PDeque<ListNode<T>> u = roots;
-		while (!u.isEmpty()) {
-			ListNode<T> v = u.front();
+		for (ListNode<T> v : u) {
 			if (index < v.size)
 				return get(v.root, v.size >> 1, index);
 			index -= v.size;
-			u = u.popFront();
 		}
 		assert false;
 		return null;
@@ -241,5 +218,47 @@ public class DeTreeList<T> extends PFullyList<T> {
 		if (isEmpty())
 			throw new NoSuchElementException();
 		return get(size - 1);
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		return new DeListIterator<>(this);
+	}
+
+	static class DeListIterator<T> implements Iterator<T> {
+		private Iterator<ListNode<T>> current;
+		private NodeIterator<T> currentItr;
+		private T next;
+
+		public DeListIterator(DeTreeList<T> array) {
+			current = array.roots.iterator();
+			findNext();
+		}
+
+		@Override
+		public boolean hasNext() {
+			return currentItr != null;
+		}
+
+		@Override
+		public T next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			T val = next;
+			findNext();
+			return val;
+		}
+
+		private void findNext() {
+			if (currentItr != null && currentItr.hasNext()) {
+				next = currentItr.next();
+				return;
+			}
+			currentItr = null;
+			if (current.hasNext()) {
+				currentItr = new NodeIterator<>(current.next().root);
+				next = currentItr.next();
+			}
+		}
 	}
 }

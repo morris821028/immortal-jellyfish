@@ -205,23 +205,23 @@ public class TreeList<T> extends PList<T> {
 		return new TreeList<>(v, size - 1);
 	}
 
-	private static interface Node<T> { // NOSONAR
+	public static interface Node<T> { // NOSONAR
 	}
 
-	private static final class TreeNode<T> implements Node<T> {
-		private final Node<T> lson;
-		private final Node<T> rson;
+	public static final class TreeNode<T> implements Node<T> {
+		public final Node<T> lson;
+		public final Node<T> rson;
 
-		TreeNode(Node<T> l, Node<T> r) {
+		public TreeNode(Node<T> l, Node<T> r) {
 			this.lson = l;
 			this.rson = r;
 		}
 	}
 
-	private static final class DataNode<T> implements Node<T> {
-		private final T val;
+	public static final class DataNode<T> implements Node<T> {
+		public final T val;
 
-		DataNode(T val) {
+		public DataNode(T val) {
 			this.val = val;
 		}
 
@@ -236,7 +236,7 @@ public class TreeList<T> extends PList<T> {
 		return new TreeListIterator<>(this);
 	}
 
-	static class NodeIterator<T> implements Iterator<T> {
+	public static class NodeIterator<T> implements Iterator<T> {
 		private Deque<StackNode<T>> stk = new ArrayDeque<>();
 
 		static class StackNode<T> {
@@ -249,7 +249,7 @@ public class TreeList<T> extends PList<T> {
 			}
 		}
 
-		NodeIterator(Node<T> root) {
+		public NodeIterator(Node<T> root) {
 			stk.addLast(new StackNode<T>(root, true));
 			while (root instanceof TreeNode) {
 				Node<T> u = ((TreeNode<T>) root).lson;
