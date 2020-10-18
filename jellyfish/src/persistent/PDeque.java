@@ -40,6 +40,15 @@ public abstract class PDeque<T> implements Iterable<T> {
 		return new QueueIterator<>(this);
 	}
 
+	/**
+	 * Returns an iterator over the elements in this deque from front to back.
+	 * 
+	 * @return an iterator over the elements in this deque from front to back.
+	 */
+	public Iterator<T> descendingIterator() {
+		return new DescendQueueIterator<>(this);
+	}
+
 	static class QueueIterator<T> implements Iterator<T> {
 		private PDeque<T> current;
 
@@ -58,6 +67,28 @@ public abstract class PDeque<T> implements Iterable<T> {
 				throw new NoSuchElementException();
 			T val = current.front();
 			current = current.popFront();
+			return val;
+		}
+	}
+
+	static class DescendQueueIterator<T> implements Iterator<T> {
+		private PDeque<T> current;
+
+		public DescendQueueIterator(PDeque<T> topmost) {
+			current = topmost;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return !current.isEmpty();
+		}
+
+		@Override
+		public T next() {
+			if (!hasNext())
+				throw new NoSuchElementException();
+			T val = current.back();
+			current = current.popBack();
 			return val;
 		}
 	}
