@@ -5,8 +5,6 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 
-import junit.framework.Assert;
-
 public class PListTestUtil {
 	private PListTestUtil() {
 	}
@@ -150,6 +148,12 @@ public class PListTestUtil {
 		set.add(a);
 		set.add(b);
 		Assertions.assertEquals(set.size(), 1);
+
+		for (int i = 0; i < 10000; i++) {
+			a = a.pushBack(i);
+			b = b.pushBack(i);
+			Assertions.assertEquals(a, b);
+		}
 
 		b = b.pushBack(5);
 		Assertions.assertFalse(a.equals(b));
