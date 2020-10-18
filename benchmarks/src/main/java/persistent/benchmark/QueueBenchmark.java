@@ -19,8 +19,8 @@ import persistent.PQueue;
 import persistent.queue.PreEvalQueue;
 import persistent.queue.RealtimeQueue;
 
-@Warmup(iterations = 3, time = 500, timeUnit = TimeUnit.MILLISECONDS)
-@Measurement(iterations = 3, time = 500, timeUnit = TimeUnit.MILLISECONDS)
+@Warmup(iterations = 1, time = 500, timeUnit = TimeUnit.MILLISECONDS)
+@Measurement(iterations = 2, time = 500, timeUnit = TimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @State(Scope.Benchmark)
