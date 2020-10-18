@@ -172,8 +172,9 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		}
 
 		RealtimeDeque<T> createTrans(PStack<T> lhs, PStack<T> rhs) {
-			if (lhs.size() + rhs.size() <= 4
-					|| (Math.min(lhs.size(), rhs.size()) * 3 >= Math.max(lhs.size(), rhs.size())))
+			final int lsz = lhs.size();
+			final int rsz = rhs.size();
+			if (lsz + rsz <= 4 || (Math.min(lsz, rsz) * 3 >= Math.max(lsz, rsz)))
 				return new RealtimeDeque<>(lhs, rhs);
 
 			return stepPrev(lhs, rhs, sFrom, sAux, bFrom, bAux, 4);
@@ -215,8 +216,9 @@ public class RealtimeDeque<T> extends PDeque<T> {
 		}
 
 		RealtimeDeque<T> createTrans(PStack<T> lhs, PStack<T> rhs) {
-			if (lhs.size() + rhs.size() <= 4
-					|| (Math.min(lhs.size(), rhs.size()) * 3 >= Math.max(lhs.size(), rhs.size())))
+			final int lsz = lhs.size();
+			final int rsz = rhs.size();
+			if (lsz + rsz <= 4 || (Math.min(lsz, rsz) * 3 >= Math.max(lsz, rsz)))
 				return new RealtimeDeque<>(lhs, rhs);
 
 			return stepPost(lhs, rhs, sAux, sNew, bFrom, bAux, bNew, sCopied, 4);
@@ -382,7 +384,9 @@ public class RealtimeDeque<T> extends PDeque<T> {
 	}
 
 	private static <T> RealtimeDeque<T> create(PStack<T> lhs, PStack<T> rhs) {
-		if (lhs.size() + rhs.size() > 4 && (Math.min(lhs.size(), rhs.size()) * 3 < Math.max(lhs.size(), rhs.size()))) {
+		final int lsz = lhs.size();
+		final int rsz = rhs.size();
+		if (lsz + rsz > 4 && (Math.min(lsz, rsz) * 3 < Math.max(lsz, rsz))) {
 			// initiate the transfer process
 
 			PStack<T> empty = PCollections.emptyStack();
