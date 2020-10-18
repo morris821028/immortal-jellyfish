@@ -3,10 +3,8 @@ package persistent.array.fully;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import persistent.PDeque;
 import persistent.PFullyList;
 import persistent.PListTestUtil;
-import persistent.array.BraunList;
 
 public class DeTreeListTest {
 	@Test
