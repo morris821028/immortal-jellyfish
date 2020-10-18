@@ -1,8 +1,8 @@
 package persistent;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import persistent.stack.PersistStack;
@@ -33,6 +33,15 @@ public abstract class PStack<T> implements Iterable<T> {
 	@Override
 	public Iterator<T> iterator() {
 		return new StackIterator<>(this);
+	}
+
+	/**
+	 * Returns an iterator over the elements in this stack from bottom to top.
+	 * 
+	 * @return an iterator over the elements in this stack from bottom to top.
+	 */
+	public Iterator<T> descendingIterator() {
+		return toArrayDeque(this).descendingIterator();
 	}
 
 	static class StackIterator<T> implements Iterator<T> {
@@ -82,8 +91,15 @@ public abstract class PStack<T> implements Iterable<T> {
 		return PersistStack.<T>create().push(bottom).push(top);
 	}
 
-	public static <T> List<T> toArrayList(PStack<T> stk) {
-		ArrayList<T> ret = new ArrayList<>();
+	public static <T> ArrayList<T> toArrayList(PStack<T> stk) {
+		ArrayList<T> ret = new ArrayList<>(stk.size());
+		for (T val : stk)
+			ret.add(val);
+		return ret;
+	}
+
+	private static <T> ArrayDeque<T> toArrayDeque(PStack<T> stk) {
+		ArrayDeque<T> ret = new ArrayDeque<>(stk.size());
 		for (T val : stk)
 			ret.add(val);
 		return ret;
